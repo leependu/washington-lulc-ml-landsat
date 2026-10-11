@@ -1,3 +1,11 @@
 # 🌎 washington-lulc-ml-landsat.git
 
 Sharing scripts created in UCLA MAGIST's GEOG 415: Geospatial Data Science Futures. Collaborative final project: ML LULC classification for Eastern Washington with my classmates.
+
+Setting up GitHub mirror: 
+
+```
+git clone https://earthengine.googlesource.com/users/leependu/washington-lulc-ml-landsat
+git remote add github git@github.com:leependu/washington-lulc-ml-landsat.git
+git config remote.github.push refs/heads/master:refs/heads/main
+```
