@@ -1,0 +1,150 @@
+/////////////////////////////////////////////////////////////////////////////////
+//                                                                             //
+//  `agg_geog415_u2`                                                           //
+//  Geog 415 Unit 2 Project                                                    //  
+//  Aaron Goodman                                                              //
+//  2025-04-27                                                                 //
+//                                                                             //
+/////////////////////////////////////////////////////////////////////////////////
+
+// Note: this script contains the code that I used to (1) import 13 of my own assets (Feature Collections),
+// (2) merge the collections, and (3) export a single Feature Collection asset.
+// [See links to individual scripts for ground truth digitization.]
+// 
+// The code that I used to import, merge, and export my Feature Collection has all been commented out.
+// My Feature Collection `agg_u2_featColl` is now imported from its GEE Legacy Asset address: 
+//     "users/leependu/geog415/u2/agg_u2_featColl"    (line 118)
+// This asset should have read access granted to all users.
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                                                                                                  //
+// Source Images                                                                                                  //
+                                                                                                                  //
+// Winter 2024: 1 cloud-free image found (120 points sampled total, 120 points (20 per class) in 1 image)         //
+var i_L9_r43_p27_20240227 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20240227")                               //
+// Spring 2024: 4 cloud-free images found (168 points sampled total, 42 points (7 per class) in 4 images)         //
+var i_L8_r43_p27_20240423 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_043027_20240423")                               //
+var i_L8_r43_p27_20240509 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_043027_20240509")                               //
+var i_L9_r43_p27_20240314 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20240314")                               //
+var i_L9_r43_p27_20240330 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20240330")                               //
+// Summer 2024: 5 cloud-free images found (150 points sampled total, 30 points (5 per class) in 5 images)         //
+var i_L8_r43_p27_20240712 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_043027_20240712")                               //
+var i_L8_r43_p27_20240728 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_043027_20240728")                               //
+var i_L8_r43_p27_20240829 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_043027_20240829")                               //
+var i_L9_r43_p27_20240704 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20240704")                               //
+var i_L9_r43_p27_20240720 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20240720")                               //
+// Fall 2024: 3 cloud-free images found (162 points sampled total, 54 points (9 per class) in 3 images)           //
+var i_L8_r43_p27_20240930 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_043027_20240930")                               //
+var i_L9_r43_p27_20240906 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20240906")                               //
+var i_L9_r43_p27_20241008 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20241008")                               //
+                                                                                                                  //
+// Load an image: 2024-04-23, a clear day                                                                         //
+var bandmap = {bands: ['SR_B4', 'SR_B3', 'SR_B2'], max: 20000}                                                    //
+Map.addLayer(i_L8_r43_p27_20240423, bandmap)                                                                      //
+                                                                                                                  //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                                                                                                                  
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                //
+// Creating the Ground Truth Feature Collections                                                                  //
+//                                                                                                                //
+// fC_i_L9_r43_p27_20240227: https://code.earthengine.google.com/647d46dd41af0491f70eb5bc56762db1                 //
+// fC_i_L8_r43_p27_20240423: https://code.earthengine.google.com/dfa8f82e8f9031ae0846dd25fe540320                 //
+// fC_i_L8_r43_p27_20240509: https://code.earthengine.google.com/cd9e61b6505152fe2bb528ee0332b695                 //
+// fC_i_L9_r43_p27_20240314: https://code.earthengine.google.com/36f968a76895b8f7619fb1182f5134be                 //
+// fC_i_L9_r43_p27_20240330: https://code.earthengine.google.com/3e0847004b1a76650bf9ebd55ba18bfe                 //
+// fC_i_L8_r43_p27_20240712: https://code.earthengine.google.com/d6dabac4620b8c0a0e4b7044854e98a8                 //
+// fC_i_L8_r43_p27_20240728: https://code.earthengine.google.com/7f9f7dd8fe95355c493a1af6be89a04c                 //
+// fC_i_L8_r43_p27_20240829: https://code.earthengine.google.com/084b3d0b8e324f3611a1417ca29a183a                 //
+// fC_i_L9_r43_p27_20240704: https://code.earthengine.google.com/b946014f9e5784f0ea6146d4f7e9edb6                 //
+// fC_i_L9_r43_p27_20240720: https://code.earthengine.google.com/67d38b00d8cd1e8c056e1899d25e2a22                 //
+// fC_i_L8_r43_p27_20240930: https://code.earthengine.google.com/1e24854a76eda108f0c26061e24dc48f                 //
+// fC_i_L9_r43_p27_20240906: https://code.earthengine.google.com/3e23469745a13997dcb325a458465b78                 //
+// fC_i_L9_r43_p27_20241008: https://code.earthengine.google.com/b4d383bf7c5836cc876471f708e7dcc7                 //
+//                                                                                                                //
+//// Did my links expire?                                                                                         //
+//// Find my scripts for yourself! --> https://code.earthengine.google.com/?accept_repo=users/leependu/geog415    //
+//// users/leependu/geog415/u2/groundTruth/r43_p27/*                                                              //
+//                                                                                                                //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Importing `leependu` (Aaron Goodman) assets
+// var fC_i_L9_r43_p27_20240227 = ee.FeatureCollection("users/leependu/geog415/u2/groundTruth/fC_i_L9_r43_p27_20240227")
+// var fC_i_L8_r43_p27_20240423 = ee.FeatureCollection("users/leependu/geog415/u2/groundTruth/fC_i_L8_r43_p27_20240423")
+// var fC_i_L8_r43_p27_20240509 = ee.FeatureCollection("users/leependu/geog415/u2/groundTruth/fC_i_L8_r43_p27_20240509")
+// var fC_i_L9_r43_p27_20240314 = ee.FeatureCollection("users/leependu/geog415/u2/groundTruth/fC_i_L9_r43_p27_20240314")
+// var fC_i_L9_r43_p27_20240330 = ee.FeatureCollection("users/leependu/geog415/u2/groundTruth/fC_i_L9_r43_p27_20240330")
+// var fC_i_L8_r43_p27_20240712 = ee.FeatureCollection("users/leependu/geog415/u2/groundTruth/fC_i_L8_r43_p27_20240712")
+// var fC_i_L8_r43_p27_20240728 = ee.FeatureCollection("users/leependu/geog415/u2/groundTruth/fC_i_L8_r43_p27_20240728")
+// var fC_i_L8_r43_p27_20240829 = ee.FeatureCollection("users/leependu/geog415/u2/groundTruth/fC_i_L8_r43_p27_20240829")
+// var fC_i_L9_r43_p27_20240704 = ee.FeatureCollection("users/leependu/geog415/u2/groundTruth/fC_i_L9_r43_p27_20240704")
+// var fC_i_L9_r43_p27_20240720 = ee.FeatureCollection("users/leependu/geog415/u2/groundTruth/fC_i_L9_r43_p27_20240720")
+// var fC_i_L8_r43_p27_20240930 = ee.FeatureCollection("users/leependu/geog415/u2/groundTruth/fC_i_L8_r43_p27_20240930")
+// var fC_i_L9_r43_p27_20240906 = ee.FeatureCollection("users/leependu/geog415/u2/groundTruth/fC_i_L9_r43_p27_20240906")
+// var fC_i_L9_r43_p27_20241008 = ee.FeatureCollection("users/leependu/geog415/u2/groundTruth/fC_i_L9_r43_p27_20241008")
+
+// print(fC_i_L9_r43_p27_20240227)
+// print(fC_i_L8_r43_p27_20240423)
+// print(fC_i_L8_r43_p27_20240509)
+// print(fC_i_L9_r43_p27_20240314)
+// print(fC_i_L9_r43_p27_20240330)
+// print(fC_i_L8_r43_p27_20240712)
+// print(fC_i_L8_r43_p27_20240728)
+// print(fC_i_L8_r43_p27_20240829)
+// print(fC_i_L9_r43_p27_20240704)
+// print(fC_i_L9_r43_p27_20240720)
+// print(fC_i_L8_r43_p27_20240930)
+// print(fC_i_L9_r43_p27_20240906)
+// print(fC_i_L9_r43_p27_20241008)
+
+// // Merge fC* into `agg_u2_featColl`
+// var agg_u2_featColl = (((((((((((fC_i_L9_r43_p27_20240906
+// .merge(fC_i_L9_r43_p27_20241008))
+// .merge(fC_i_L9_r43_p27_20240720))
+// .merge(fC_i_L9_r43_p27_20240704))
+// .merge(fC_i_L9_r43_p27_20240330))
+// .merge(fC_i_L9_r43_p27_20240314))
+// .merge(fC_i_L9_r43_p27_20240227))
+// .merge(fC_i_L8_r43_p27_20240930))
+// .merge(fC_i_L8_r43_p27_20240829))
+// .merge(fC_i_L8_r43_p27_20240728))
+// .merge(fC_i_L8_r43_p27_20240712))
+// .merge(fC_i_L8_r43_p27_20240509))
+// .merge(fC_i_L8_r43_p27_20240423)
+
+// Export!!!
+// Export.table.toAsset(agg_u2_featColl,"agg_u2_featColl")
+// Test Import
+var agg_u2_featColl = ee.FeatureCollection("users/leependu/geog415/u2/agg_u2_featColl") // <---------- it works!
+print(agg_u2_featColl)
+
+// Visualize
+//// Palette
+var paletteSeason = ee.Dictionary({
+  'Spring': 'yellow',
+  'Summer': 'red',
+  'Fall': 'blue',
+  'Winter': 'white'
+});
+var paletteClass = ee.Dictionary({
+  '1': 'white',
+  '2': 'red',
+  '3': 'chartreuse',
+  '4': 'green',
+  '5': 'blue',
+  '7': 'yellow'
+});
+//// Make image with style
+var image = agg_u2_featColl
+  .map(function (feature) {
+    // Add a style-dictionary property using our chosen palette
+    return feature.set('myStyle', {
+      'color': paletteSeason.get(feature.get('season')),
+    });
+  })
+  .style({
+    'styleProperty': 'myStyle',
+  });
+//// Map
+Map.addLayer(image, {});
+Map.centerObject(agg_u2_featColl, 9)

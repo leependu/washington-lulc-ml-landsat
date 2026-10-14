@@ -1,0 +1,1069 @@
+/////////////////////////////////////////////////////////////////////////////////
+//                                                                             //
+//  `agg_geog415_u4`                                                           //
+//  Geog 415 Unit 4                                                            //
+//  MACHINE LEARNING MODEL                                                     //  
+//  Aaron Goodman                                                              //
+//  2025-05-25                                                                 //
+//                                                                             //
+/////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                                                                                                                        //
+var agg_geog415_groundTruth_hrmnzd = ee.FeatureCollection("users/leependu/geog415/u4/agg_geog415_groundTruth_hrmnzd")                   //
+// print('Ground truth data:','(agg_geog415_groundTruth_hrmnzd)',agg_geog415_groundTruth_hrmnzd.first())                                //
+// print('Size of ground truth data:',agg_geog415_groundTruth_hrmnzd.size())                                                            //
+                                                                                                                                        //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//               //                                                                                       //
+//  JOIN IMAGE   //                                                                                       //
+//               //                                                                                       //
+///////////////////                                                                                       //
+                                                                                                          //
+var ls8Sr = ee.ImageCollection('LANDSAT/LC08/C02/T1_L2');                                                 //
+var ls9Sr = ee.ImageCollection('LANDSAT/LC09/C02/T1_L2');                                                 //
+                                                                                                          //
+// Function to add time in millisecond since epoch                                                        //
+var addMillis = function(feature) {                                                                       //
+  var dtMillis = ee.Date(feature.get('date')).millis();                                                   //
+  return feature.set('dateMillis', dtMillis);                                                             //
+};                                                                                                        //
+// Split FC by sensor type                                                                                //
+var lsFilters = {                                                                                         //
+  'LANDSAT_8': ee.Filter.equals('id', 'LANDSAT_8'),                                                       //
+  'LANDSAT_9': ee.Filter.equals('id', 'LANDSAT_9')                                                        //
+};                                                                                                        //
+var ls8Features = agg_geog415_groundTruth_hrmnzd.filter(lsFilters['LANDSAT_8']).map(addMillis);           //
+var ls9Features = agg_geog415_groundTruth_hrmnzd.filter(lsFilters['LANDSAT_9']).map(addMillis);           //
+// Process Landsat 8 features by path/row                                                                 //
+var processLs8 = function(feature) {                                                                      //
+  var path = ee.Number(feature.get('path'));                                                              //
+  var row = ee.Number(feature.get('row'));                                                                //
+  var date = ee.Date(feature.get('date'));                                                                //
+  // Filter to exact path/row                                                                             //
+  var filteredImages = ls8Sr                                                                              //
+    .filter(ee.Filter.eq('WRS_PATH', path))                                                               //
+    .filter(ee.Filter.eq('WRS_ROW', row));                                                                //
+  // Find closest image by date within 30 days                                                            //
+  var closestImage = filteredImages                                                                       //
+    .filterDate(date.advance(-15, 'day'), date.advance(15, 'day'))                                        //
+    .sort('system:time_start', true)                                                                      //
+    .first();                                                                                             //
+  // Set the image as a property                                                                          //
+  return feature.set('image', closestImage);                                                              //
+};                                                                                                        //
+// Process Landsat 9 features by path/row                                                                 //
+var processLs9 = function(feature) {                                                                      //
+  var path = ee.Number(feature.get('path'));                                                              //
+  var row = ee.Number(feature.get('row'));                                                                //
+  var date = ee.Date(feature.get('date'));                                                                //
+  // Filter to exact path/row                                                                             //
+  var filteredImages = ls9Sr                                                                              //
+    .filter(ee.Filter.eq('WRS_PATH', path))                                                               //
+    .filter(ee.Filter.eq('WRS_ROW', row));                                                                //
+  // Find closest image by date within 30 days                                                            //
+  var closestImage = filteredImages                                                                       //
+    .filterDate(date.advance(-15, 'day'), date.advance(15, 'day'))                                        //
+    .sort('system:time_start', true)                                                                      //
+    .first();                                                                                             //
+  // Set the image as a property                                                                          //
+  return feature.set('image', closestImage);                                                              //
+};                                                                                                        //
+// Apply the processing to each feature                                                                   //
+var joinLs8 = ls8Features.map(processLs8);                                                                //
+var joinLs9 = ls9Features.map(processLs9);                                                                //
+// Merge the results                                                                                      //
+var agg_geog415_fCiC = joinLs8.merge(joinLs9);                                                            //
+                                                                                                          //
+// print('Feature/Image Collection data:','(agg_geog415_fCiC)', agg_geog415_fCiC.first());                //
+// print('Size of F/IC data:',agg_geog415_fCiC.size())                                                    //
+                                                                                                          //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                    //                                                                                  //
+//  TASSELED CAP      //                                                                                  //
+//  COEFFICIENTS      //                                                                                  //
+//                    //                                                                                  //
+////////////////////////                                                                                  //
+                                                                                                          //
+// Tasseled Cap coefficients for Landsat (moved here for use in scale analysis)                           //
+var coefficients = ee.Array([                                                                             //
+  [0.3029, 0.2786, 0.4733, 0.5599, 0.508, 0.1872],                                                        //
+  [-0.2941, -0.243, -0.5424, 0.7276, 0.0713, -0.1608],                                                    //
+  [0.1511, 0.1973, 0.3283, 0.3407, -0.7117, -0.4559],                                                     //
+  [-0.8239, 0.0849, 0.4396, -0.058, 0.2013, -0.2773],                                                     //
+  [-0.3294, 0.0557, 0.1056, 0.1855, -0.4349, 0.8085],                                                     //
+  [0.1079, -0.9023, 0.4119, 0.0575, -0.0259, 0.0252]                                                      //
+]);                                                                                                       //
+                                                                                                          //
+var tcComp = ['brightness', 'greenness', 'wetness', 'fourth', 'fifth', 'sixth'];                          //
+                                                                                                          //
+// Function to add Tasseled Cap to training data                                                          //
+var addTasseledCap = function(feature) {                                                                  //
+  var reflectanceArray = ee.Array([                                                                       //
+    [ee.Number(feature.get('SR_B2'))],                                                                    //
+    [ee.Number(feature.get('SR_B3'))],                                                                    //
+    [ee.Number(feature.get('SR_B4'))],                                                                    //
+    [ee.Number(feature.get('SR_B5'))],                                                                    //
+    [ee.Number(feature.get('SR_B6'))],                                                                    //
+    [ee.Number(feature.get('SR_B7'))]                                                                     //
+  ]);                                                                                                     //
+                                                                                                          //
+  var tcArray = coefficients.matrixMultiply(reflectanceArray);                                            //
+                                                                                                          //
+  return feature                                                                                          //
+    .set('brightness', tcArray.get([0, 0]))                                                               //
+    .set('greenness', tcArray.get([1, 0]))                                                                //
+    .set('wetness', tcArray.get([2, 0]))                                                                  //
+    .set('fourth', tcArray.get([3, 0]))                                                                   //
+    .set('fifth', tcArray.get([4, 0]))                                                                    //
+    .set('sixth', tcArray.get([5, 0]));                                                                   //
+};                                                                                                        //
+                                                                                                          //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+// Variables
+var bands = ['SR_B2','SR_B3','SR_B4','SR_B5','SR_B6','SR_B7'] // Original Predictor
+var bandsWithTC = ee.List(bands).cat(tcComp) // Enhanced Predictor (Tasseled Cap)
+var landcoverClass = 'class' // Response
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                    //                                                                                  //
+//  SENSITIVITY       //                                                                                  //
+//  ANALYSIS          //                                                                                  //
+//                    //                                                                                  //
+////////////////////////                                                                                  //
+                                                                                                          //
+// Clear pixel mask                                                                                       //
+var clrMsk = function(image){                                                                             //
+  var QABits = 6;                                                                                         //
+  var clear = image.select('QA_PIXEL')                                                                    //
+    .bitwiseAnd(Math.pow(2, QABits))                                                                      //
+    .rightShift(QABits)                                                                                   //
+    .eq(1);                                                                                               //
+  return image                                                                                            //
+    .select(bands)                                                                                        //
+    .updateMask(clear);                                                                                   //
+};                                                                                                        //
+                                                                                                          //
+// Function to convert DN to SR                                                                           //
+var dnToSr = function(image) {                                                                            //
+  return image                                                                                            //
+    .select(bands)                                                                                        //
+    .multiply(0.0000275)                                                                                  //
+    .add(-0.2);                                                                                           //
+};                                                                                                        //
+                                                                                                          //
+// Function to extract pixel values at specified scale                                                    //
+var extrScale = function(feature, scale) {                                                                //
+  var img = ee.Image(feature.get('image'));                                                               //
+  var imgId = img.id();                                                                                   //
+  var newFeature = ee.Feature(feature.geometry());                                                        //
+  var props = feature.toDictionary();                                                                     //
+  props = props.remove(['image']).set('image_id', imgId);                                                 //
+  newFeature = newFeature.setMulti(props);                                                                //
+  var imgSr = dnToSr(clrMsk(img).select(bands));                                                          //
+  return imgSr.sampleRegions({                                                                            //
+    collection: ee.FeatureCollection([newFeature]),                                                       //
+    properties: newFeature.propertyNames(),                                                               //
+    scale: scale,                                                                                         //
+    geometries: true                                                                                      //
+  });                                                                                                     //
+};                                                                                                        //
+                                                                                                          //
+// Scale sensitivity analysis - Compare satellite-only vs satellite+Tasseled Cap *at each scale*          //
+// var scaleLst = ee.List.sequence(30, 150, 30); // Test 30m, 60m, 90m, 120m, 150m                        //
+                                                                                                          //
+// Test satellite-only accuracy at each scale                                                             //
+// var scaleAccuraciesOrig = scaleLst.map(function(scale) {                                               //
+  // Sample training data at this specific scale                                                          //
+  // var trainingAtScale = agg_geog415_fCiC.map(function(feature) {                                       //
+    // return extrScale(feature, scale);                                                                  //
+  // }).flatten();                                                                                        //
+                                                                                                          //
+  // Split into train/test                                                                                //
+  // var trainTestData = trainingAtScale.randomColumn();                                                  //
+  // var trainScale = trainTestData.filter(ee.Filter.lt('random', 0.8));                                  //
+  // var testScale = trainTestData.filter(ee.Filter.gte('random', 0.8));                                  //
+                                                                                                          //
+  // Train Random Forest with satellite bands only                                                        //
+  // var rf = ee.Classifier.smileRandomForest({                                                           //
+    // numberOfTrees: 100,                                                                                //
+    // seed: 42                                                                                           //
+  // })                                                                                                   //
+  // .train({                                                                                             //
+    // features: trainScale,                                                                              //
+    // classProperty: 'class',                                                                            //
+    // inputProperties: bands                                                                             //
+  // });                                                                                                  //
+                                                                                                          //
+  // return testScale.classify(rf)                                                                        //
+    // .errorMatrix({                                                                                     //
+      // actual: 'class',                                                                                 //
+      // predicted: 'classification'                                                                      //
+    // })                                                                                                 //
+    // .accuracy();                                                                                       //
+// });                                                                                                    //
+                                                                                                          //
+// Test satellite+Tasseled Cap accuracy at each scale                                                     //
+// var scaleAccuraciesTC = scaleLst.map(function(scale) {                                                 //
+  // Sample training data at this specific scale                                                          //
+  // var trainingAtScale = agg_geog415_fCiC.map(function(feature) {                                       //
+    // return extrScale(feature, scale);                                                                  //
+  // }).flatten();                                                                                        //
+                                                                                                          //
+  // Add Tasseled Cap transformations to the sampled data                                                 //
+  // var trainingWithTC = trainingAtScale.map(addTasseledCap);                                            //
+                                                                                                          //
+  // Split into train/test                                                                                //
+  // var trainTestData = trainingWithTC.randomColumn();                                                   //
+  // var trainScale = trainTestData.filter(ee.Filter.lt('random', 0.8));                                  //
+  // var testScale = trainTestData.filter(ee.Filter.gte('random', 0.8));                                  //
+                                                                                                          //
+  // Train Random Forest with satellite bands + Tasseled Cap                                              //
+  // var rf = ee.Classifier.smileRandomForest({                                                           //
+    // numberOfTrees: 100,                                                                                //
+    // seed: 42                                                                                           //
+  // })                                                                                                   //
+  // .train({                                                                                             //
+    // features: trainScale,                                                                              //
+    // classProperty: 'class',                                                                            //
+    // inputProperties: bandsWithTC                                                                       //
+  // });                                                                                                  //
+                                                                                                          //
+  // return testScale.classify(rf)                                                                        //
+    // .errorMatrix({                                                                                     //
+      // actual: 'class',                                                                                 //
+      // predicted: 'classification'                                                                      //
+    // })                                                                                                 //
+    // .accuracy();                                                                                       //
+// });                                                                                                    //
+                                                                                                          //
+// Chart scale sensitivity results - Compare both approaches                                              //
+// var chartScale = ui.Chart.array.values({                                                               //
+  // array: ee.Array([scaleAccuraciesOrig, scaleAccuraciesTC]).transpose(),                               //
+  // axis: 0,                                                                                             //
+  // xLabels: scaleLst                                                                                    //
+// })                                                                                                     //
+// .setSeriesNames(['Satellite Only', 'Satellite + Tasseled Cap'])                                        //
+// .setOptions({                                                                                          //
+  // title: 'Scale Sensitivity Analysis - Satellite vs Satellite+Tasseled Cap',                           //
+  // hAxis: {title: 'Pixel Scale (meters)', titleTextStyle: {italic: false, bold: true}},                 //
+  // vAxis: {title: 'Classification Accuracy', titleTextStyle: {italic: false, bold: true}},              //
+  // series: {                                                                                            //
+    // 0: {color: 'blue'},                                                                                //
+    // 1: {color: 'red'}                                                                                  //
+  // }                                                                                                    //
+// });                                                                                                    //
+                                                                                                          //
+// print(chartScale);                                                                                     //
+// print('Optimal scale and approach will be determined from chart results')                              //
+// print('Satellite-only accuracies by scale:', scaleAccuraciesOrig);                                     //
+// 30, 60, 90, 120, 150 :: 0.68655036578, 0.68246968026, 0.6733805117, 0.66191780821, 0.66252119841       //
+// print('Satellite+Tasseled Cap accuracies by scale:', scaleAccuraciesTC);                               //
+// *30*, 60, 90, 120, 150 :: *0.70922746781*, 0.69146482122, 0.6684991753, 0.66448087431, 0.66311659192   //
+                                                                                                          //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                    //                                                                                  //
+//  HYPERPARAMETER    //    *Due to memory limits, most of this code remains commented out                //
+//  TUNING            //                                                                                  //
+//                    //                                                                                  //
+////////////////////////                                                                                  //
+                                                                                                          //
+// NOTE: Set optimal scale based on sensitivity analysis results above                                    //
+var optimalScale = 30; // greatest accuracy from sensitivity analysis                                     //
+var useTC = true; // Tasseled Cap performed better than original                                          //
+                                                                                                          //
+// Prepare training data at optimal scale                                                                 //
+var trainingAtOptimalScale = agg_geog415_fCiC.map(function(feature) {                                     //
+  return extrScale(feature, optimalScale);                                                                //
+}).flatten();                                                                                             //
+                                                                                                          //
+// Apply Tasseled Cap if it performed better                                                              //
+var finalTrainingData = useTC ? trainingAtOptimalScale.map(addTasseledCap) : trainingAtOptimalScale;      //
+var finalInputProperties = useTC ? bandsWithTC : bands;                                                   //
+                                                                                                          //
+// Split into train/test for hyperparameter tuning                                                        //
+var trainTestData = finalTrainingData.randomColumn();                                                     //
+var trainHyper = trainTestData.filter(ee.Filter.lt('random', 0.8));                                       //
+var testHyper = trainTestData.filter(ee.Filter.gte('random', 0.8));                                       //
+                                                                                                          //
+// print('Hyperparameter tuning using:', useTC ? 'Satellite + Tasseled Cap' : 'Satellite Only');          //
+// print('Hyperparameter tuning at scale:', optimalScale, 'meters');                                      //
+// print('Training size for hyperparameter tuning:', trainHyper.size());                                  //
+// print('Test size for hyperparameter tuning:', testHyper.size());                                       //
+                                                                                                          //
+// Parameter ranges for tuning                                                                            //
+// var numTrees = ee.List.sequence(50, 150, 20); // 50, 70, 90, 110, 130, 150                             //
+// var varPerSplit = ee.List.sequence(1, 6, 1); // ~~1, 2, 3, 4, 5, 6~~ doing this sequentially           //
+// var minLeafPop = ee.List.sequence(1, 10, 2); // ~~1, 3, 5, 7, 9~~ "-"                                  //
+// var bagFrac = ee.List.sequence(0.3, 0.8, 0.1); // ~~0.3, 0.4, 0.5, 0.6, 0.7~~ "-"                      //
+                                                                                                          //
+////////////////////////////////////                                                                      //
+//// Step 1: Tune numberOfTrees ////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////                                                                      //
+                                                                                                          //
+// var treeAccuracies = numTrees.map(function(n) {                                                        //
+  // var rf = ee.Classifier.smileRandomForest({                                                           //
+    // numberOfTrees: n,                                                                                  //
+    // seed: 42                                                                                           //
+  // })                                                                                                   //
+  // .train({                                                                                             //
+    // features: trainHyper,                                                                              //
+    // classProperty: 'class',                                                                            //
+    // inputProperties: finalInputProperties                                                              //
+  // });                                                                                                  //
+                                                                                                          //
+  // return testHyper.classify(rf)                                                                        //
+    // .errorMatrix({                                                                                     //
+      // actual: 'class',                                                                                 //
+      // predicted: 'classification'                                                                      //
+    // })                                                                                                 //
+    // .accuracy();                                                                                       //
+// });                                                                                                    //
+                                                                                                          //
+// var chartTrees = ui.Chart.array.values({                                                               //
+  // array: ee.Array(treeAccuracies),                                                                     //
+  // axis: 0,                                                                                             //
+  // xLabels: numTrees                                                                                    //
+// })                                                                                                     //
+// .setSeriesNames(['Accuracy'])                                                                          //
+// .setOptions({                                                                                          //
+  // title: 'Hyperparameter Tuning: Number of Trees',                                                     //
+  // hAxis: {title: 'Number of Trees', titleTextStyle: {italic: false, bold: true}},                      //
+  // vAxis: {title: 'Accuracy', titleTextStyle: {italic: false, bold: true}}                              //
+// });                                                                                                    //
+                                                                                                          //
+// print(chartTrees);                                                                                     //
+// print('numberOfTrees Accuracies:', treeAccuracies);                                                    //
+// 50, 75, 90, 110, *130*, 150 :: 0.671, 0.678, 0.68, 0.68, *0.682*, 0.681                                //
+                                                                                                          //
+////////////////////////////////////////                                                                  //
+//// Step 2: Tune variablesPerSplit ////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////                                                                  //
+//                                                                                                        //
+// I was able to get numberOfTrees tuning to work, but for VPS here I keep running into memory limits     //
+// so I am going to hamfistedly do sequential tuning for remaining hyperparameters                        //
+// using comment+uncomment -- it's slow but it will work                                                  //
+//                                                                                                        //
+//// Test variablesPerSplit = 1 --------------------------------------------------------------------------//
+// var rf_vps1 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 1,                                                                                //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_vps1 = testHyper.classify(rf_vps1)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('VPS=1 Accuracy:', accuracy_vps1); // 0.6959910913140311                                         //
+                                                                                                          //
+//// Test variablesPerSplit = 2 --------------------------------------------------------------------------//
+// var rf_vps2 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 2,                                                                                //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_vps2 = testHyper.classify(rf_vps2)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('VPS=2 Accuracy:', accuracy_vps2); // 0.6893095768374164                                         //
+                                                                                                          //
+//// Test variablesPerSplit = 3 --------------------------------------------------------------------------//
+// var rf_vps3 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 3,                                                                                //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_vps3 = testHyper.classify(rf_vps3)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('VPS=3 Accuracy:', accuracy_vps3); // 0.7021158129175946                                         //
+                                                                                                          //
+//// Test variablesPerSplit = 4 --------------------------------------------------------------------------//
+// var rf_vps4 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 4,                                                                                //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_vps4 = testHyper.classify(rf_vps4)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('VPS=4 Accuracy:', accuracy_vps4); // 0.688195991091314                                          //
+                                                                                                          //
+//// Test variablesPerSplit = 5 --------------------------------------------------------------------------//
+// var rf_vps5 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 5,                                                                                //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_vps5 = testHyper.classify(rf_vps5)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //  
+// print('VPS=5 Accuracy:', accuracy_vps5); // 0.6915367483296214                                         //
+                                                                                                          //
+//// Test variablesPerSplit = 6 --------------------------------------------------------------------------//
+// var rf_vps6 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 6,                                                                                //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_vps6 = testHyper.classify(rf_vps6)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('VPS=6 Accuracy:', accuracy_vps6); // 0.6848552338530067                                         //
+                                                                                                          //
+// Greatest Accuracy: VPS=3, 0.7021158129175946                                                           //                                                                                                          
+                                                                                                          //
+////////////////////////////////////////                                                                  //
+//// Step 3: Tune minLeafPop ///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////                                                                  //
+//                                                                                                        //
+//// Test minLeafPop = 1 ---------------------------------------------------------------------------------//
+// var rf_mlp1 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 3,                                                                                //
+  // minLeafPopulation: 1,                                                                                //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_mlp1 = testHyper.classify(rf_mlp1)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('MinLeafPop=1 Accuracy:', accuracy_mlp1); // 0.7021158129175946                                  //
+                                                                                                          //
+//// Test minLeafPop = 3 ---------------------------------------------------------------------------------//
+// var rf_mlp3 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 3,                                                                                //
+  // minLeafPopulation: 3,                                                                                //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_mlp3 = testHyper.classify(rf_mlp3)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('MinLeafPop=3 Accuracy:', accuracy_mlp3); // 0.6926503340757239                                  //
+                                                                                                          //
+//// Test minLeafPop = 5 ---------------------------------------------------------------------------------//
+// var rf_mlp5 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 3,                                                                                //
+  // minLeafPopulation: 5,                                                                                //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_mlp5 = testHyper.classify(rf_mlp5)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('MinLeafPop=5 Accuracy:', accuracy_mlp5); // 0.6932071269487751                                  //
+                                                                                                          //
+//// Test minLeafPop = 7 ---------------------------------------------------------------------------------//
+// var rf_mlp7 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 3,                                                                                //
+  // minLeafPopulation: 7,                                                                                //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_mlp7 = testHyper.classify(rf_mlp7)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('MinLeafPop=7 Accuracy:', accuracy_mlp7); // 0.6898663697104677                                  //
+                                                                                                          //
+//// Test minLeafPop = 9 ---------------------------------------------------------------------------------//
+// var rf_mlp9 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 3,                                                                                //
+  // minLeafPopulation: 9,                                                                                //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_mlp9 = testHyper.classify(rf_mlp9)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('MinLeafPop=9 Accuracy:', accuracy_mlp9); // 0.6876391982182628                                  //
+                                                                                                          //
+////////////////////////////////////////                                                                  //
+//// Step 4: Tune bagFraction //////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////                                                                  //
+//                                                                                                        //
+//// Test bagFraction = 0.3 ------------------------------------------------------------------------------//
+// var rf_bf03 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 3,                                                                                //
+  // minLeafPopulation: 1,                                                                                //
+  // bagFraction: 0.3,                                                                                    //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_bf03 = testHyper.classify(rf_bf03)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('BagFraction=0.3 Accuracy:', accuracy_bf03); // 0.6920935412026726                               //
+                                                                                                          //
+//// Test bagFraction = 0.4 ------------------------------------------------------------------------------//
+// var rf_bf04 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 3,                                                                                //
+  // minLeafPopulation: 1,                                                                                //
+  // bagFraction: 0.4,                                                                                    //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_bf04 = testHyper.classify(rf_bf04)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('BagFraction=0.4 Accuracy:', accuracy_bf04); // 0.6909799554565702                               //
+                                                                                                          //
+//// Test bagFraction = 0.5 ------------------------------------------------------------------------------//
+// var rf_bf05 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 3,                                                                                //
+  // minLeafPopulation: 1,                                                                                //
+  // bagFraction: 0.5,                                                                                    //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_bf05 = testHyper.classify(rf_bf05)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('BagFraction=0.5 Accuracy:', accuracy_bf05); // 0.7021158129175946                               //
+                                                                                                          //
+//// Test bagFraction = 0.6 ------------------------------------------------------------------------------//
+// var rf_bf06 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 3,                                                                                //
+  // minLeafPopulation: 1,                                                                                //
+  // bagFraction: 0.6,                                                                                    //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_bf06 = testHyper.classify(rf_bf06)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('BagFraction=0.6 Accuracy:', accuracy_bf06); // 0.6904231625835189                               //
+                                                                                                          //
+//// Test bagFraction = 0.7 ------------------------------------------------------------------------------//
+// var rf_bf07 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 3,                                                                                //
+  // minLeafPopulation: 1,                                                                                //
+  // bagFraction: 0.7,                                                                                    //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_bf07 = testHyper.classify(rf_bf07)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('BagFraction=0.7 Accuracy:', accuracy_bf07); // 0.6920935412026726                               //
+                                                                                                          //
+//// Test bagFraction = 0.8 ------------------------------------------------------------------------------//
+// var rf_bf08 = ee.Classifier.smileRandomForest({                                                        //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 3,                                                                                //
+  // minLeafPopulation: 1,                                                                                //
+  // bagFraction: 0.8,                                                                                    //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_bf08 = testHyper.classify(rf_bf08)                                                        //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('BagFraction=0.8 Accuracy:', accuracy_bf08); // 0.683184855233853                                //
+                                                                                                          //
+////////////////////////////////////////                                                                  //
+//// Step 5: Tune maxNodes /////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////                                                                  //
+//                                                                                                        //
+//// Test maxNodes = null (unlimited) --------------------------------------------------------------------//
+// var rf_mn_null = ee.Classifier.smileRandomForest({                                                     //
+  // numberOfTrees: 130,                                                                                  //
+  // variablesPerSplit: 3,                                                                                //
+  // minLeafPopulation: 1,                                                                                //
+  // bagFraction: 0.5,                                                                                    //
+  // maxNodes: null,                                                                                      //
+  // seed: 42                                                                                             //
+// })                                                                                                     //
+// .train({                                                                                               //
+  // features: trainHyper,                                                                                //
+  // classProperty: 'class',                                                                              //
+  // inputProperties: finalInputProperties                                                                //
+// });                                                                                                    //
+// var accuracy_mn_null = testHyper.classify(rf_mn_null)                                                  //
+  // .errorMatrix({                                                                                       //
+    // actual: 'class',                                                                                   //
+    // predicted: 'classification'                                                                        //
+  // })                                                                                                   //
+  // .accuracy();                                                                                         //
+// print('MaxNodes=null Accuracy:', accuracy_mn_null); // 0.7021158129175946                              //
+// Using MaxNodes=null because that is the calculation that completes successfully                        //
+                                                                                                          //                                                                                                        
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                    //                                                                                  //
+//  FINAL MODEL       //                                                                                  //
+//  & ACCURACY        //                                                                                  //
+//                    //                                                                                  //
+////////////////////////                                                                                  //
+                                                                                                          //
+// NOTE: Parameters determined in sensitivity analysis and tuning process above                           //
+var finalOptimalScale = 30;                                                                               //
+var finalUseTC = true;                                                                                    //
+var finalOptimalTrees = 130;                                                                              //
+var finalOptimalVPS = 3;                                                                                  //
+var finalOptimalMinLeaf = 1;                                                                              //
+var finalOptimalBagFraction = 0.5;                                                                        //
+var finalOptimalMaxNodes = null;                                                                          //
+                                                                                                          //
+// Prepare final training data at optimal scale and configuration                                         //
+var finalTrainingAtScale = agg_geog415_fCiC.map(function(feature) {                                       //
+  return extrScale(feature, finalOptimalScale);                                                           //
+}).flatten();                                                                                             //
+                                                                                                          //
+// Apply Tasseled Cap if it performed better                                                              //
+var finalTrainingComplete = finalUseTC ? finalTrainingAtScale.map(addTasseledCap) : finalTrainingAtScale; //
+var finalProperties = finalUseTC ? bandsWithTC : bands;                                                   //
+                                                                                                          //
+// Split into train/test for final model evaluation                                                       //
+var finalTrainTest = finalTrainingComplete.randomColumn();                                                //
+var finalTrain = finalTrainTest.filter(ee.Filter.lt('random', 0.8));                                      //
+var finalTest = finalTrainTest.filter(ee.Filter.gte('random', 0.8));                                      //
+                                                                                                          //
+print('=== FINAL MODEL CONFIGURATION ===');                                                               //
+print('Using approach:', finalUseTC ? 'Satellite + Tasseled Cap' : 'Satellite Only');                     //
+print('Using scale:', finalOptimalScale, 'meters');                                                       //
+print('Using trees:', finalOptimalTrees);                                                                 //
+print('Using variables per split:', finalOptimalVPS);                                                     //
+print('Using minimum leaf population:', finalOptimalMinLeaf);                                             //
+print('Using bag fraction:', finalOptimalBagFraction);                                                    //
+print('Using max nodes:', finalOptimalMaxNodes);                                                          //
+print('Final training size:', finalTrain.size());                                                         //
+print('Final test size:', finalTest.size());                                                              //
+                                                                                                          //
+// Train final optimized model                                                                            //
+var finalRF = ee.Classifier.smileRandomForest({                                                           //
+  numberOfTrees: finalOptimalTrees,                                                                       //
+  variablesPerSplit: finalOptimalVPS,                                                                     //
+  minLeafPopulation: finalOptimalMinLeaf,                                                                 //
+  bagFraction: finalOptimalBagFraction,                                                                   //
+  maxNodes: finalOptimalMaxNodes,                                                                         //
+  seed: 42                                                                                                //
+})                                                                                                        //
+.train({                                                                                                  //
+  features: finalTrain,                                                                                   //
+  classProperty: 'class',                                                                                 //
+  inputProperties: finalProperties                                                                        //
+});                                                                                                       //
+                                                                                                          //
+// Final Accuracy Assessment                                                                              //
+var finalConfusionMatrix = finalTest.classify(finalRF)                                                    //
+  .errorMatrix({                                                                                          //
+    actual: 'class',                                                                                      //
+    predicted: 'classification'                                                                           //
+  });                                                                                                     //
+                                                                                                          //
+print('=== FINAL MODEL ACCURACY ASSESSMENT ===');                                                         //
+print('Confusion Matrix:', finalConfusionMatrix);                                                         //
+print('Overall Accuracy:', finalConfusionMatrix.accuracy(),'[70.212%]');                                  //
+print('Producers Accuracy:', finalConfusionMatrix.producersAccuracy());                                   //
+print('Consumers Accuracy:', finalConfusionMatrix.consumersAccuracy());                                   //
+print('Kappa:', finalConfusionMatrix.kappa());                                                            //
+                                                                                                          //
+// Feature importance                                                                                     //
+print('Feature Importance:', finalRF.explain());                                                          //
+                                                                                                          //
+// Export final model for use in classification                                                           //
+print('Final model ready for classification:', finalRF);                                                  //
+                                                                                                          //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                     //                                                                                 //
+//  CHANGE DETECTION   //                                                                                 //
+//                     //                                                                                 //
+/////////////////////////                                                                                 //
+                                                                                                          //
+// Function to add Tasseled Cap to images (adapted from feature-based function)                           //
+var addTasseledCapToImage = function(image) {                                                             //
+  var arrayImage1D = image.select(bands).toArray();                                                       //
+  var arrayImage2D = arrayImage1D.toArray(1);                                                             //
+  var componentsImage = ee.Image(coefficients)                                                            //
+    .matrixMultiply(arrayImage2D)                                                                         //
+    .arrayProject([0])                                                                                    //
+    .arrayFlatten([tcComp]);                                                                              //
+  return image.addBands(componentsImage);                                                                 //
+};                                                                                                        //
+                                                                                                          //
+// Function to create composites for change detection                                                     //
+var createComposite = function(path, row, startDate, endDate) {                                           //
+  var combinedCollection = ls8Sr.merge(ls9Sr)                                                             //
+    .filter(ee.Filter.eq('WRS_PATH', path))                                                               //
+    .filter(ee.Filter.eq('WRS_ROW', row))                                                                 //
+    .filterDate(startDate, endDate)                                                                       //
+    .map(function(image) {                                                                                //
+      return dnToSr(clrMsk(image));                                                                       //
+    });                                                                                                   //
+  var composite = combinedCollection.median();                                                            //
+  return addTasseledCapToImage(composite);                                                                //
+};                                                                                                        //
+print('=== CHANGE DETECTION ANALYSIS ===');                                                               //
+print('Analyzing land cover change: 2017 vs 2022, Path 46 Row 27');                                       //
+print('Well-represented in ground truth dataset');                                                        //
+print('Capturing fire recovery (2017) and flood impacts (2022)');                                         //
+                                                                                                          //
+// Composites for 2017, 2022                                                                              //
+var composite2017 = createComposite(46, 27, '2017-06-01', '2017-09-01');                                  //
+var composite2022 = createComposite(46, 27, '2022-06-01', '2022-09-01');                                  //
+print('Composite 2017 bands:', composite2017.bandNames());                                                //
+print('Composite 2022 bands:', composite2022.bandNames());                                                //
+                                                                                                          //
+// Classify both periods using optimized model                                                            //
+var classified2017 = composite2017.select(finalProperties).classify(finalRF);                             //
+var classified2022 = composite2022.select(finalProperties).classify(finalRF);                             //
+                                                                                                          //
+// Change detection matrix                                                                                //
+// Multiply first period by 10, add second period                                                         //
+// Creates unique codes: 11=Urban→Urban, 14=Urban→Forest, 41=Forest→Urban, etc.                           //
+var changeMatrix = classified2017.multiply(10).add(classified2022);                                       //
+                                                                                                          //
+// Class dictionary                                                                                       //
+var classNames = ee.Dictionary({                                                                          //
+  1: 'Urban',                                                                                             //
+  2: 'Agriculture',                                                                                       //
+  3: 'Rangeland',                                                                                         //
+  4: 'Forest',                                                                                            //
+  5: 'Water',                                                                                             //
+  7: 'Barren'                                                                                             //
+});                                                                                                       //
+                                                                                                          //
+// Change categories for analysis                                                                         //
+var changeCategories = ee.Dictionary({                                                                    //
+  //// Stable categories (no change)                                                                      //
+  11: 'Stable Urban',                                                                                     //
+  22: 'Stable Agriculture',                                                                               //
+  33: 'Stable Rangeland',                                                                                 //
+  44: 'Stable Forest',                                                                                    //
+  55: 'Stable Water',                                                                                     //
+  77: 'Stable Barren',                                                                                    //
+  //// Change types, even unlikely ones                                                                   //
+  // Urban (1) involved                                                                                   //
+  12: 'Urban to Agriculture',                                                                             //
+  21: 'Agriculture to Urban',                                                                             //
+  13: 'Urban to Rangeland',                                                                               //
+  31: 'Rangeland to Urban',                                                                               //
+  14: 'Urban to Forest',                                                                                  //
+  41: 'Forest to Urban',                                                                                  //
+  15: 'Urban to Water',                                                                                   //
+  51: 'Water to Urban',                                                                                   //
+  17: 'Urban to Barren',                                                                                  //
+  71: 'Barren to Urban',                                                                                  //
+  // Agriculture (2) involved                                                                             //
+  23: 'Agriculture to Rangeland',                                                                         //
+  32: 'Rangeland to Agriculture',                                                                         //
+  24: 'Agriculture to Forest',                                                                            //
+  42: 'Forest to Agriculture',                                                                            //
+  25: 'Agriculture to Water',                                                                             //
+  52: 'Water to Agriculture',                                                                             //
+  27: 'Agriculture to Barren',                                                                            //
+  72: 'Barren to Agriculture',                                                                            //
+  // Rangeland (3) involved                                                                               //
+  34: 'Rangeland to Forest',                                                                              //
+  43: 'Forest to Rangeland',                                                                              //
+  35: 'Rangeland to Water',                                                                               //
+  53: 'Water to Rangeland',                                                                               //
+  37: 'Rangeland to Barren',                                                                              //
+  73: 'Barren to Rangeland',                                                                              //
+  // Forest (4) involved                                                                                  //
+  45: 'Forest to Water',                                                                                  //
+  54: 'Water to Forest',                                                                                  //
+  47: 'Forest to Barren',                                                                                 //
+  74: 'Barren to Forest',                                                                                 //
+  // Water (5) involved                                                                                   //
+  57: 'Water to Barren',                                                                                  //
+  75: 'Barren to Water'                                                                                   //
+});                                                                                                       //
+                                                                                                          //
+// Create a focused area for detailed analysis (reduce computation)                                       //
+var studyArea = ee.Geometry.Rectangle([-122.5, 47.0, -121.0, 48.0]);                                      //
+                                                                                                          //
+// Calculate change statistics                                                                            //
+var changeStats = changeMatrix.reduceRegion({                                                             //
+  reducer: ee.Reducer.frequencyHistogram(),                                                               //
+  geometry: studyArea,                                                                                    //
+  scale: 30,                                                                                              //
+  maxPixels: 1e9                                                                                          //
+});                                                                                                       //
+print('Change Detection Statistics:', changeStats);                                                       //
+                                                                                                          //
+// Calculate detailed transition matrix for study area                                                    //
+var transitionMatrix = changeMatrix.clip(studyArea).reduceRegion({                                        //
+  reducer: ee.Reducer.frequencyHistogram(),                                                               //
+  geometry: studyArea,                                                                                    //
+  scale: 30,                                                                                              //
+  maxPixels: 1e8                                                                                          //
+});                                                                                                       //
+print('Transition Matrix (Study Area):', transitionMatrix);                                               //
+                                                                                                          //
+// Identify major change types                                                                            //
+var majorChanges = changeMatrix.neq(11).and(changeMatrix.neq(22))                                         //
+  .and(changeMatrix.neq(33)).and(changeMatrix.neq(44))                                                    //
+  .and(changeMatrix.neq(55)).and(changeMatrix.neq(77));                                                   //
+                                                                                                          //
+var changePixelCount = majorChanges.reduceRegion({                                                        //
+  reducer: ee.Reducer.sum(),                                                                              //
+  geometry: studyArea,                                                                                    //
+  scale: 30,                                                                                              //
+  maxPixels: 1e8                                                                                          //
+});                                                                                                       //
+print('Major Change Pixel Count (Study Area):', changePixelCount);                                        //
+                                                                                                          //
+// Export variables for visualization                                                                     //
+var vis2017 = classified2017.clip(studyArea);                                                             //
+var vis2022 = classified2022.clip(studyArea);                                                             //
+var visChange = changeMatrix.clip(studyArea);                                                             //
+var visMajorChange = majorChanges.clip(studyArea);                                                        //
+print('=== CHANGE DETECTION SUMMARY ===');                                                                //
+print('Study area defined for detailed analysis: [-122.5, 47.0, -121.0, 48.0]');                          //
+print('2017 Classification:', vis2017);                                                                   //
+print('2022 Classification:', vis2022);                                                                   //
+print('Change Matrix:', visChange);                                                                       //
+print('Major Changes Mask:', visMajorChange);                                                             //
+                                                                                                          //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//              //                                                                                        //
+//  VISUALIZE   //                                                                                        //
+//              //                                                                                        //
+//////////////////                                                                                        //
+                                                                                                          //
+//// Palette                                                                                              //
+var paletteSeason = ee.Dictionary({                                                                       //
+  'Spring': 'yellow',                                                                                     //
+  'Summer': 'red',                                                                                        //
+  'Fall': 'blue',                                                                                         //
+  'Winter': 'white'                                                                                       //
+});                                                                                                       //
+var paletteClass = ee.Dictionary({                                                                        //
+  '1': 'cyan',                                                                                            //
+  '2': 'teal',                                                                                            //
+  '3': 'Olive',                                                                                           //
+  '4': 'ForestGreen',                                                                                     //
+  '5': 'blue',                                                                                            //
+  '7': 'yellow'                                                                                           //
+});                                                                                                       //
+//// Make image with style                                                                                //
+var image = agg_geog415_groundTruth_hrmnzd                                                                //
+  .map(function (feature) {                                                                               //
+    // Add a style-dictionary property using our chosen palette                                           //
+    return feature.set('myStyle', {                                                                       //
+      'color': paletteClass.get(feature.get('class')),                                                    //
+    });                                                                                                   //
+  })                                                                                                      //
+  .style({                                                                                                //
+    'styleProperty': 'myStyle',                                                                           //
+  });                                                                                                     //
+// Change Detection Visualization Palettes                                                                //
+var classificationVis = {                                                                                 //
+  min: 1, max: 7,                                                                                         //
+  palette: ['cyan', 'teal', 'Olive', 'ForestGreen', 'blue', 'white', 'yellow']                            //
+};                                                                                                        //
+                                                                                                          //
+// RGB Composite visualization for context                                                                //
+var rgbVis = {bands: ['SR_B4', 'SR_B3', 'SR_B2'], min: 0.0, max: 0.3};                                    //
+                                                                                                          //
+// Change matrix visualization (simplified)                                                               //
+var changeVis = {                                                                                         //
+  min: 11, max: 77,                                                                                       //
+  palette: ['darkred', 'red', 'orange', 'yellow', 'lightgreen', 'green',                                  //
+           'darkgreen', 'lightblue', 'blue', 'darkblue', 'purple', 'magenta']                             //
+};                                                                                                        //
+                                                                                                          //
+// Major changes visualization                                                                            //
+var changesOnlyVis = {min: 0, max: 1, palette: ['black', 'white']};                                       //
+                                                                                                          //
+// Map Setup                                                                                              //
+Map.setOptions('SATELLITE');                                                                              //
+Map.centerObject(studyArea, 9);                                                                           //
+                                                                                                          //
+// Add training data layer                                                                                //
+Map.addLayer(image, {}, "Harmonized Training Data", false);                                               //
+                                                                                                          //
+// Add RGB composites for context                                                                         //
+Map.addLayer(composite2017.clip(studyArea), rgbVis, '2017 RGB Composite', false);                         //
+Map.addLayer(composite2022.clip(studyArea), rgbVis, '2022 RGB Composite');                                //
+                                                                                                          //
+// Add classification results                                                                             //
+Map.addLayer(vis2017, classificationVis, '2017 Land Cover Classification', false);                        //
+Map.addLayer(vis2022, classificationVis, '2022 Land Cover Classification');                               //
+                                                                                                          //
+// Add change detection results                                                                           //
+Map.addLayer(visChange, changeVis, 'Change Detection Matrix');                                            //
+Map.addLayer(visMajorChange, changesOnlyVis, 'Major Changes Only', false);                                //
+                                                                                                          //
+// Legend information                                                                                     //
+print('=== VISUALIZATION LEGEND ===');                                                                    //
+print('Land Cover Classes:');                                                                             //
+print('1 = Urban (cyan)');                                                                                //
+print('2 = Agriculture (teal)');                                                                          //
+print('3 = Rangeland (olive)');                                                                           //
+print('4 = Forest (forest green)');                                                                       //
+print('5 = Water (blue)');                                                                                //
+print('7 = Barren (yellow)');                                                                             //
+print('Change Matrix Codes (First digit = 2017, Second digit = 2022):');                                  //
+print('11, 22, 33, 44, 55, 77 = Stable/No Change');                                                       //
+print('14 = Urban to Forest, 41 = Forest to Urban');                                                      //
+print('47 = Forest to Barren, 74 = Barren to Forest');                                                    //
+print('45 = Forest to Water, 54 = Water to Forest');                                                      //
+print('White areas in "Major Changes" = Any land cover change');                                          //
+                                                                                                          //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////

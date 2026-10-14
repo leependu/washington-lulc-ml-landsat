@@ -1,0 +1,201 @@
+/////////////////////////////////////////////////////////////////////////////////
+//                                                                             //
+//  `agg_geog415_u2_proj`                                                      //
+//  Geog 415 Unit 2 Project                                                    //  
+//  Aaron Goodman                                                              //
+//  2025-04-27                                                                 //
+//                                                                             //
+/////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////
+// Identifying Cloud-free Images for 2024 //////////////////////////////
+//                                                                    //
+// -- Row 43, Path 27 (eastern Washington) ---------------------------//
+//// ~~ Landsat 8 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+////// Winter                                                         //
+// var iC_L8_r43_p27_w = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2") //
+//   .filter(ee.Filter.eq('WRS_PATH', 43))                            //
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                             //
+//   .filterDate('2023-12-01', '2024-03-01')                          //
+////// Spring                                                         //
+// var iC_L8_r43_p27_s = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2") //
+//   .filter(ee.Filter.eq('WRS_PATH', 43))                            //    
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                             //
+//   .filterDate('2024-03-01', '2024-06-01')                          //
+////// Summer                                                         //
+// var iC_L8_r43_p27_m = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2") //
+//   .filter(ee.Filter.eq('WRS_PATH', 43))                            //
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                             //
+//   .filterDate('2024-06-01', '2024-09-01')                          //
+////// Fall                                                           //
+// var iC_L8_r43_p27_f = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2") //
+//   .filter(ee.Filter.eq('WRS_PATH', 43))                            //
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                             //
+//   .filterDate('2024-09-01', '2024-12-01')                          //
+//// ~~ Landsat 9 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+////// Winter                                                         //
+// var iC_L9_r43_p27_w = ee.ImageCollection("LANDSAT/LC09/C02/T1_L2") //
+//   .filter(ee.Filter.eq('WRS_PATH', 43))                            //
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                             //
+//   .filterDate('2023-12-01', '2024-03-01')                          //
+////// Spring                                                         //
+// var iC_L9_r43_p27_s = ee.ImageCollection("LANDSAT/LC09/C02/T1_L2") //
+//   .filter(ee.Filter.eq('WRS_PATH', 43))                            //
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                             //
+//   .filterDate('2024-03-01', '2024-06-01')                          //
+////// Summer                                                         //
+// var iC_L9_r43_p27_m = ee.ImageCollection("LANDSAT/LC09/C02/T1_L2") //
+//   .filter(ee.Filter.eq('WRS_PATH', 43))                            //
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                             //
+//   .filterDate('2024-06-01', '2024-09-01')                          //
+////// Fall                                                           //
+// var iC_L9_r43_p27_f = ee.ImageCollection("LANDSAT/LC09/C02/T1_L2") //
+//   .filter(ee.Filter.eq('WRS_PATH', 43))                            //
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                             //
+//   .filterDate('2024-09-01', '2024-12-01')                          //
+// -- Row 47, Path 27 (Puget Sound) ----------------------------------//
+//// ~~ Landsat 8 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+////// Winter                                                         //
+// var iC_L8_r47_p27_w = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2") //
+//   .filter(ee.Filter.eq('WRS_PATH', 47))                            //
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                             //
+//   .filterDate('2023-12-01', '2024-03-01')                          //
+////// Spring                                                         //
+// var iC_L8_r47_p27_s = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2") //
+//   .filter(ee.Filter.eq('WRS_PATH', 47))                            //
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                             //
+//   .filterDate('2024-03-01', '2024-06-01')                          //
+////// Summer                                                         //
+// var iC_L8_r47_p27_m = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2") //
+//   .filter(ee.Filter.eq('WRS_PATH', 47))                            //
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                             //
+//   .filterDate('2024-06-01', '2024-09-01')                          //
+////// Fall                                                           //
+// var iC_L8_r47_p27_f = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2") //
+//   .filter(ee.Filter.eq('WRS_PATH', 47))                            //
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                             //
+//   .filterDate('2024-09-01', '2024-12-01')                          //
+//// ~~ Landsat 9 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+////// Winter                                                         //
+// var iC_L9_r47_p27_w = ee.ImageCollection("LANDSAT/LC09/C02/T1_L2") //
+//   .filter(ee.Filter.eq('WRS_PATH', 47))                            //
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                             //
+//   .filterDate('2023-12-01', '2024-03-01')                          //
+////// Spring                                                         //
+// var iC_L9_r47_p27_s = ee.ImageCollection("LANDSAT/LC09/C02/T1_L2") //
+//   .filter(ee.Filter.eq('WRS_PATH', 47))                            //
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                             //
+//   .filterDate('2024-03-01', '2024-06-01')                          //
+////// Summer                                                         //
+// var iC_L9_r47_p27_m = ee.ImageCollection("LANDSAT/LC09/C02/T1_L2") //
+//   .filter(ee.Filter.eq('WRS_PATH', 47))                            //
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                             //
+//   .filterDate('2024-06-01', '2024-09-01')                          //
+////// Fall                                                           //
+// var iC_L9_r47_p27_f = ee.ImageCollection("LANDSAT/LC09/C02/T1_L2") //
+//   .filter(ee.Filter.eq('WRS_PATH', 47))                            //
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                             //
+//   .filterDate('2024-09-01', '2024-12-01')                          //
+// -- Print ----------------------------------------------------------//
+// print(iC_L8_r43_p27_w)                                             //
+// print(iC_L8_r43_p27_s)                                             //
+// print(iC_L8_r43_p27_m)                                             //
+// print(iC_L8_r43_p27_f)                                             //
+// print(iC_L8_r47_p27_w)                                             //
+// print(iC_L8_r47_p27_s)                                             //
+// print(iC_L8_r47_p27_m)                                             //
+// print(iC_L8_r47_p27_f)                                             //
+// print(iC_L9_r43_p27_w)                                             //
+// print(iC_L9_r43_p27_s)                                             //
+// print(iC_L9_r43_p27_m)                                             //
+// print(iC_L9_r43_p27_f)                                             //
+// print(iC_L9_r47_p27_w)                                             //
+// print(iC_L9_r47_p27_s)                                             //
+// print(iC_L9_r47_p27_m)                                             //
+// print(iC_L9_r47_p27_f)                                             //
+////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Images ///////////////////////////////////////////////////////////////////////////
+// -- Row 43, Path 27 (eastern Washington) ----------------------------------------//
+//// Winter: 3 images                                                              //
+var i_L9_r43_p27_20231225 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20231225")//
+var i_L9_r43_p27_20240126 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20240126")//
+var i_L9_r43_p27_20240227 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20240227")//
+//// Spring: 4 images                                                              //
+var i_L8_r43_p27_20240423 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_043027_20240423")//
+var i_L8_r43_p27_20240509 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_043027_20240509")//
+var i_L9_r43_p27_20240314 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20240314")//
+var i_L9_r43_p27_20240330 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20240330")//
+//// Summer: 5 images                                                              //
+var i_L8_r43_p27_20240712 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_043027_20240712")//
+var i_L8_r43_p27_20240728 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_043027_20240728")//
+var i_L8_r43_p27_20240829 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_043027_20240829")//
+var i_L9_r43_p27_20240704 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20240704")//
+var i_L9_r43_p27_20240720 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20240720")//
+//// Fall: 3 images                                                                //
+var i_L8_r43_p27_20240930 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_043027_20240930")//
+var i_L9_r43_p27_20240906 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20240906")//
+var i_L9_r43_p27_20241008 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20241008")//
+// --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-- //
+// -- Row 47, Path 27 (Puget Sound) -----------------------------------------------//
+// --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-- //
+//// Winter: 3 images                                                              //
+var i_L8_r47_p27_20231213 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_047027_20231213")//
+var i_L8_r47_p27_20240114 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_047027_20240114")//
+var i_L9_r47_p27_20240106 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_047027_20240106")//
+//// Spring: 2 images                                                              //
+var i_L8_r47_p27_20240318 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_047027_20240318")//
+var i_L8_r47_p27_20240419 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_047027_20240419")//
+//// Summer: 5 images                                                              //
+var i_L8_r47_p27_20240606 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_047027_20240606")//
+var i_L8_r47_p27_20240708 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_047027_20240708")//
+var i_L8_r47_p27_20240724 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_047027_20240724")//
+var i_L9_r47_p27_20240716 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_047027_20240716")//
+var i_L9_r47_p27_20240801 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_047027_20240801")//
+//// Fall: 1 image                                                                 //
+var i_L8_r47_p27_20241012 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_047027_20241012")//
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Display //////////////////////////////////////////////////////////////////////////
+var bandmap = {bands: ['SR_B4', 'SR_B3', 'SR_B2'], max: 20000}
+// -- Row 43, Path 27 (eastern Washington) ----------------------------------------//
+//// Winter: 3 images                                                              
+// Map.addLayer(i_L9_r43_p27_20231225, bandmap);
+// Map.addLayer(i_L9_r43_p27_20240126, bandmap);
+// Map.addLayer(i_L9_r43_p27_20240227, bandmap);
+//// Spring: 4 images
+// Map.addLayer(i_L8_r43_p27_20240423, bandmap);
+// Map.addLayer(i_L8_r43_p27_20240509, bandmap);
+// Map.addLayer(i_L9_r43_p27_20240314, bandmap);
+// Map.addLayer(i_L9_r43_p27_20240330, bandmap);
+//// Summer: 5 images
+// Map.addLayer(i_L8_r43_p27_20240712, bandmap);
+// Map.addLayer(i_L8_r43_p27_20240728, bandmap);
+// Map.addLayer(i_L8_r43_p27_20240829, bandmap);
+// Map.addLayer(i_L9_r43_p27_20240704, bandmap);
+// Map.addLayer(i_L9_r43_p27_20240720, bandmap);
+//// Fall: 3 images
+// Map.addLayer(i_L8_r43_p27_20240930, bandmap);
+// Map.addLayer(i_L9_r43_p27_20240906, bandmap);
+// Map.addLayer(i_L9_r43_p27_20241008, bandmap);
+// --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-- //
+// -- Row 47, Path 27 (Puget Sound) -----------------------------------------------//
+// --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-- //
+//// Winter: 3 images                                                              
+// Map.addLayer(i_L8_r47_p27_20231213, bandmap);
+// Map.addLayer(i_L8_r47_p27_20240114, bandmap);
+// Map.addLayer(i_L9_r47_p27_20240106, bandmap);
+//// Spring: 2 images
+// Map.addLayer(i_L8_r47_p27_20240318, bandmap);
+// Map.addLayer(i_L8_r47_p27_20240419, bandmap);
+//// Summer: 5 images
+// Map.addLayer(i_L8_r47_p27_20240606, bandmap);
+// Map.addLayer(i_L8_r47_p27_20240708, bandmap);
+// Map.addLayer(i_L8_r47_p27_20240724, bandmap);
+// Map.addLayer(i_L9_r47_p27_20240716, bandmap);
+// Map.addLayer(i_L9_r47_p27_20240801, bandmap);
+//// Fall: 1 images
+// Map.addLayer(i_L8_r47_p27_20241012, bandmap);
