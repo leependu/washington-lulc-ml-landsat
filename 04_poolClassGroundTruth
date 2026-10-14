@@ -1,0 +1,424 @@
+/////////////////////////////////////////////////////////////////////////////////
+//                                                                             //
+//  `agg_geog415_u3`                                                           //
+//  Geog 415 Unit 3 Project                                                    //  
+//  Aaron Goodman                                                              //
+//  2025-05-11                                                                 //
+//                                                                             //
+/////////////////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////
+////  LOAD FC BY NAME   ////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Classmates' asset paths are withheld for privacy; each collection is named by WRS-2 path/row/year.                   //
+// The merged, cleaned result of this script is loaded from my own export below (see EXPORT & FINAL PRINT).             //
+var fc_u2_groundTruth_p43_r27_2024 = ee.FeatureCollection("users/leependu/geog415/u2/agg_u2_featColl")                  //
+var fc_u2_groundTruth_p48_r26_2019 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p46_r27_2022 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p48_r26_2015 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p45_r27_2017 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p44_r26_2014 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p43_r27_2017 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p46_r26_2023 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p47_r27_2016 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p44_r28_2022 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p47_r26_2020 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p45_r26_2018 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p45_r28_2023 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p43_r28_2020 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p47_r27_2022 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p46_r28_2015 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p45_r27_2021 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p46_r27_2017 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+var fc_u2_groundTruth_p46_r27_2018 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////
+////  SUMMARIZE FC BY NAME    ////
+////////////////////////////////////////////////////////////////////////////////////////////
+var groundTruthName = [                                                                   //
+  fc_u2_groundTruth_p43_r27_2024, // 43,27,2024                                           //
+  fc_u2_groundTruth_p48_r26_2019, // 48,26,2019                                           //
+  fc_u2_groundTruth_p46_r27_2022, // 46,27,2022                                           //
+  fc_u2_groundTruth_p48_r26_2015, // 48,26,2015 *missing `date`, `row`, `path`, `id`      //
+  fc_u2_groundTruth_p45_r27_2017, // 45,27,2017 *missing `date`, `row`, `path`, `id`      //
+  fc_u2_groundTruth_p44_r26_2014, // 44,26,2014 #POLYGON                                  //
+  fc_u2_groundTruth_p43_r27_2017, // 43,27,2017 #POLYGON                                  //
+  fc_u2_groundTruth_p46_r26_2023, // 46,26,2023 *missing `row`, `path`, `id`              //
+  fc_u2_groundTruth_p47_r27_2016, // 47,27,2016                                           //
+  fc_u2_groundTruth_p44_r28_2022, // 44,28,2022                                           //
+  fc_u2_groundTruth_p47_r26_2020, // 47,26,2020 #POLYGON                                  //
+  fc_u2_groundTruth_p45_r26_2018, // 45,26,2018 #POLYGON                                  //
+  fc_u2_groundTruth_p45_r28_2023, // 45,28,2023                                           //
+  fc_u2_groundTruth_p43_r28_2020, // 43,28,2020                                           //
+  fc_u2_groundTruth_p47_r27_2022, // 47,27,2022 #POLYGON                                  //
+  fc_u2_groundTruth_p46_r28_2015, // 46,28,2015 #POLYGON                                  //
+  fc_u2_groundTruth_p45_r27_2021, // 45,27,2021 *`class` column is capitalized `Class`    //
+  fc_u2_groundTruth_p46_r27_2017, // 46,27,2017 *missing `row`, `path`; `id` is `landsat` //
+  fc_u2_groundTruth_p46_r27_2018  // 46,27,2018                                           //
+]                                                                                         //
+print('Feature Collections, unprocessed: ',groundTruthName)                               //
+////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+                                          //////////////////////
+                                          //    PROCESSING    //
+                                          //                  //
+////////////////////////////////////////////                  //////////////////////////////////////////////
+//                     //                                                                                 //
+//  POLYGON TO POINT   //                                                                                 //
+//                     //                                                                                 //
+/////////////////////////                                                                                 //
+                                                                                                          //
+var polygonToPoint = function(feature) {                                                                  //
+  var centroid = feature.geometry().centroid();                                                           //
+  return ee.Feature(centroid).copyProperties(feature);                                                    //
+};                                                                                                        //
+                                                                                                          //
+var fc_u2_groundTruth_p44_r26_2014b = fc_u2_groundTruth_p44_r26_2014.map(polygonToPoint);                 //
+var fc_u2_groundTruth_p43_r27_2017b = fc_u2_groundTruth_p43_r27_2017.map(polygonToPoint);                 //
+var fc_u2_groundTruth_p47_r26_2020b = fc_u2_groundTruth_p47_r26_2020.map(polygonToPoint);                 //
+var fc_u2_groundTruth_p45_r26_2018b = fc_u2_groundTruth_p45_r26_2018.map(polygonToPoint);                 //
+var fc_u2_groundTruth_p47_r27_2022b = fc_u2_groundTruth_p47_r27_2022.map(polygonToPoint);                 //
+var fc_u2_groundTruth_p46_r28_2015b = fc_u2_groundTruth_p46_r28_2015.map(polygonToPoint);                 //
+                                                                                                          //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                        //                                                                              //
+//  COLUMN CORRECTIONS    //                                                                              //
+//                        //                                                                              //
+////////////////////////////                                                                              //
+                                                                                                          //
+var fc_u2_groundTruth_p45_r27_2021b = fc_u2_groundTruth_p45_r27_2021.map(function(feature) {              //
+  var classValue = feature.get('Class');                                                                  //
+  var idValue = feature.get('id');                                                                        //
+  // Standardize ID value                                                                                 //
+  var standardId = ee.Algorithms.If(                                                                      //
+    ee.String(idValue).match('LC08').size().gt(0),                                                        //
+    'LANDSAT_8',                                                                                          //
+    ee.Algorithms.If(                                                                                     //
+      ee.String(idValue).match('LC09').size().gt(0),                                                      //
+      'LANDSAT_9',                                                                                        //
+      // If it doesn't contain either pattern, use LANDSAT_8 as default                                   //
+      'LANDSAT_8'                                                                                         //
+    )                                                                                                     //
+  );                                                                                                      //
+  return feature                                                                                          //
+    .set('class', classValue)                                                                             //
+    .set('Class', null)                                                                                   //
+    .set('id', standardId)                                                                                //
+});                                                                                                       //
+var fc_u2_groundTruth_p46_r27_2017b = fc_u2_groundTruth_p46_r27_2017.map(function(feature) {              //
+  var landsatValue = feature.get('landsat');                                                              //
+  return feature                                                                                          //
+    .set('id', landsatValue)                                                                              //
+    .set('landsat', null)                                                                                 //
+    .set('path', 46)                                                                                      //
+    .set('row', 27);                                                                                      //
+});                                                                                                       //
+var fc_u2_groundTruth_p46_r26_2023b = fc_u2_groundTruth_p46_r26_2023.map(function(feature) {              //
+  var dateValue = feature.get('date');                                                                    //
+  return feature                                                                                          //
+    .set('id', 'LANDSAT_9') // confirmed via date search                                                  //
+    .set('path', 46)                                                                                      //
+    .set('row', 26);                                                                                      //
+});                                                                                                       //
+var fc_u2_groundTruth_p47_r26_2020c = fc_u2_groundTruth_p47_r26_2020b.map(function(feature) {             //
+  return feature                                                                                          //
+    .set('color', null);                                                                                  //
+});                                                                                                       //
+                                                                                                          //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//            //                                                                                          //
+//  INSPECT   //                                                                                          //
+//            //                                                                                          //
+////////////////                                                                                          //
+                                                                                                          //
+var groundTruth = [                                                                                       //
+  fc_u2_groundTruth_p43_r27_2024,                                                                         //
+  fc_u2_groundTruth_p48_r26_2019,                                                                         //
+  fc_u2_groundTruth_p46_r27_2022,                                                                         //
+  //fc_u2_groundTruth_p48_r26_2015,// *missing `date`, `row`, `path`, `id`: outta luck, exclude           //
+  //fc_u2_groundTruth_p45_r27_2017,// *missing `date`, `row`, `path`, `id`: outta luck, exclude           //
+  fc_u2_groundTruth_p46_r26_2023b, // *added `path`, `row`, `id`                                          //
+  fc_u2_groundTruth_p47_r27_2016,                                                                         //
+  fc_u2_groundTruth_p44_r28_2022,                                                                         //
+  fc_u2_groundTruth_p45_r28_2023,                                                                         //
+  fc_u2_groundTruth_p43_r28_2020,                                                                         //
+  fc_u2_groundTruth_p45_r27_2021b, // *renamed`class`                                                     //
+  fc_u2_groundTruth_p46_r27_2017b, // *renamed `id`; added `path`, `row`                                  //
+  fc_u2_groundTruth_p46_r27_2018,                                                                         //
+  fc_u2_groundTruth_p44_r26_2014b, // *found centroids                                                    //
+  fc_u2_groundTruth_p43_r27_2017b, // *found centroids                                                    //
+  fc_u2_groundTruth_p47_r26_2020c, // *found centroids, removed `color` column                            //
+  fc_u2_groundTruth_p45_r26_2018b, // *found centroids                                                    //
+  fc_u2_groundTruth_p47_r27_2022b, // *found centroids                                                    //
+  fc_u2_groundTruth_p46_r28_2015b  // *found centroids                                                    //
+]                                                                                                         //
+print('Feature Collections, cleaned up: ',groundTruth)                                                    //
+                                                                                                          //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          //                                                                                            //
+//  MERGE   //                                                                                            //
+//          //                                                                                            //
+//////////////                                                                                            //
+                                                                                                          //
+var apes = (((((((((((((((fc_u2_groundTruth_p43_r27_2024                                                  //
+.merge(fc_u2_groundTruth_p48_r26_2019))                                                                   //
+.merge(fc_u2_groundTruth_p46_r27_2022))                                                                   //
+// .merge(fc_u2_groundTruth_p48_r26_2015)) // outta luck, exclude                                         //
+// .merge(fc_u2_groundTruth_p45_r27_2017)) // outta luck, exclude                                         //
+.merge(fc_u2_groundTruth_p46_r26_2023b))                                                                  //
+.merge(fc_u2_groundTruth_p47_r27_2016))                                                                   //
+.merge(fc_u2_groundTruth_p44_r28_2022))                                                                   //
+.merge(fc_u2_groundTruth_p45_r28_2023))                                                                   //
+.merge(fc_u2_groundTruth_p43_r28_2020))                                                                   //
+.merge(fc_u2_groundTruth_p45_r27_2021b))                                                                  //
+.merge(fc_u2_groundTruth_p46_r27_2017b))                                                                  //
+.merge(fc_u2_groundTruth_p46_r27_2018))                                                                   //
+.merge(fc_u2_groundTruth_p44_r26_2014b))                                                                  //
+.merge(fc_u2_groundTruth_p43_r27_2017b))                                                                  //
+.merge(fc_u2_groundTruth_p47_r26_2020c))                                                                  //
+.merge(fc_u2_groundTruth_p45_r26_2018b))                                                                  //
+.merge(fc_u2_groundTruth_p47_r27_2022b))                                                                  //
+.merge(fc_u2_groundTruth_p46_r28_2015b)                                                                   //
+                                                                                                          //
+print('Row count of merged dataset: ',apes.size())                                                        //
+print('Merged dataset (apes):',apes.limit(10))                                                            //
+                                                                                                          //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                           //                                                                           //
+//  FILTER LAT/LONG ERRORS   //                                                                           //
+//                           //                                                                           //
+///////////////////////////////                                                                           //
+                                                                                                          //
+var nwhemisphere = ee.Geometry.Rectangle([-180,0,0,90])                                                   //
+var apes = apes.filterBounds(nwhemisphere);                                                               //
+var addClassDescription = function(feature) {                                                             //
+  var classValue = ee.Number(feature.get('class')).int();                                                 //
+  var classDict = ee.Dictionary({                                                                         //
+    '1': 'Urban',                                                                                         //
+    '2': 'Agriculture',                                                                                   //
+    '3': 'Rangeland',                                                                                     //
+    '4': 'Forest',                                                                                        //
+    '5': 'Water',                                                                                         //
+    '6': 'Unknown',                                                                                       //
+    '7': 'Barren'                                                                                         //
+  });                                                                                                     //
+  var description = classDict.get(classValue);                                                            //
+  return feature.set('classDescription', description);                                                    //
+};                                                                                                        //
+                                                                                                          //
+var apes = apes.map(addClassDescription);                                                                 //
+print('Row count of dataset filtered by NW hemisphere: ',apes.size())                                     //
+print('Dataset filtered by NW hemisphere (apes):',apes.limit(10))                                         //
+                                                                                                          //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          //                                                                                            //
+//  JOIN!   //                                                                                            //
+//          //                                                                                            //
+//////////////                                                                                            //
+                                                                                                          //
+var ls8Sr = ee.ImageCollection('LANDSAT/LC08/C02/T1_L2');                                                 //
+var ls9Sr = ee.ImageCollection('LANDSAT/LC09/C02/T1_L2');                                                 //
+                                                                                                          //
+// Function to add time in millisecond since epoch                                                        //
+var addMillis = function(feature) {                                                                       //
+  var dtMillis = ee.Date(feature.get('date')).millis();                                                   //
+  return feature.set('dateMillis', dtMillis);                                                             //
+};                                                                                                        //
+// Split FC by sensor type                                                                                //
+var lsFilters = {                                                                                         //
+  'LANDSAT_8': ee.Filter.equals('id', 'LANDSAT_8'),                                                       //
+  'LANDSAT_9': ee.Filter.equals('id', 'LANDSAT_9')                                                        //
+};                                                                                                        //
+var ls8Features = apes.filter(lsFilters['LANDSAT_8']).map(addMillis);                                     //
+var ls9Features = apes.filter(lsFilters['LANDSAT_9']).map(addMillis);                                     //
+// Process Landsat 8 features by path/row                                                                 //
+var processLs8 = function(feature) {                                                                      //
+  var path = ee.Number(feature.get('path'));                                                              //
+  var row = ee.Number(feature.get('row'));                                                                //
+  var date = ee.Date(feature.get('date'));                                                                //
+  // Filter to exact path/row                                                                             //
+  var filteredImages = ls8Sr                                                                              //
+    .filter(ee.Filter.eq('WRS_PATH', path))                                                               //
+    .filter(ee.Filter.eq('WRS_ROW', row));                                                                //
+  // Find closest image by date within 30 days                                                            //
+  var closestImage = filteredImages                                                                       //
+    .filterDate(date.advance(-15, 'day'), date.advance(15, 'day'))                                        //
+    .sort('system:time_start', true)                                                                      //
+    .first();                                                                                             //
+  // Set the image as a property                                                                          //
+  return feature.set('image', closestImage);                                                              //
+};                                                                                                        //
+// Process Landsat 9 features by path/row                                                                 //
+var processLs9 = function(feature) {                                                                      //
+  var path = ee.Number(feature.get('path'));                                                              //
+  var row = ee.Number(feature.get('row'));                                                                //
+  var date = ee.Date(feature.get('date'));                                                                //
+  // Filter to exact path/row                                                                             //
+  var filteredImages = ls9Sr                                                                              //
+    .filter(ee.Filter.eq('WRS_PATH', path))                                                               //
+    .filter(ee.Filter.eq('WRS_ROW', row));                                                                //
+  // Find closest image by date within 30 days                                                            //
+  var closestImage = filteredImages                                                                       //
+    .filterDate(date.advance(-15, 'day'), date.advance(15, 'day'))                                        //
+    .sort('system:time_start', true)                                                                      //
+    .first();                                                                                             //
+  // Set the image as a property                                                                          //
+  return feature.set('image', closestImage);                                                              //
+};                                                                                                        //
+// Apply the processing to each feature                                                                   //
+var joinLs8 = ls8Features.map(processLs8);                                                                //
+var joinLs9 = ls9Features.map(processLs9);                                                                //
+// Merge the results                                                                                      //
+var apesImage = joinLs8.merge(joinLs9);                                                                   //
+                                                                                                          //
+print('Row count of dataset w/ joined image: ',apesImage.size())                                          //
+print('Dataset w/ joined image (apesImage)', apesImage.limit(10));                                        //
+                                                                                                          //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          //                                                                                            //
+//  SAMPLE  //                                                                                            //
+//          //                                                                                            //
+//////////////                                                                                            //
+                                                                                                          //
+// Clear pixel mask                                                                                       //
+var clrMsk = function(image){                                                                             //
+  // Bitmask for clear pixels                                                                             //
+  var QABits = 6;                                                                                         //
+  // Select the pixel QA band (Different between collections)                                             //
+  var clear = image.select('QA_PIXEL')                                                                    //
+    // To retrieve all possible values                                                                    //
+    .bitwiseAnd(Math.pow(2, QABits))                                                                      //
+    // Shift to the first position to retrieve the value                                                  //
+    .rightShift(QABits)                                                                                   //
+    // Use only pixels that are clear                                                                     //
+    .eq(1);                                                                                               //
+  return image                                                                                            //
+    .select(bands)                                                                                        //
+    .updateMask(clear)                                                                                    //
+};                                                                                                        //
+// Function to convert DN to SR                                                                           //
+var dnToSr = function(image) {                                                                            //
+  return image                                                                                            //
+    .select(bands)                                                                                        //
+    .multiply(0.0000275)                                                                                  //
+    .add(-0.2)                                                                                            //
+}                                                                                                         //
+// Bands involved                                                                                         //
+var bands = ['SR_B2','SR_B3','SR_B4','SR_B5','SR_B6','SR_B7']                                             //
+// Function to extract pixel values and attach to each feature                                            //
+var extr = function(feature) {                                                                            //
+  var img = ee.Image(feature.get('image'));                                                               //
+  // Convert the 'image' property to an image ID string                                                   //
+  var imgId = img.id();                                                                                   //
+  // Create a new feature with all original properties except 'image' and add 'image_id' instead          //
+  var newFeature = ee.Feature(feature.geometry());                                                        //
+  // Copy all properties from the original feature                                                        //
+  var props = feature.toDictionary();                                                                     //
+  // Remove the 'image' property and add 'image_id'                                                       //
+  props = props.remove(['image']).set('image_id', imgId);                                                 //
+  // Set the properties on the new feature                                                                //
+  newFeature = newFeature.setMulti(props);                                                                //
+  // Process the image                                                                                    //
+  var imgSr = dnToSr(clrMsk(img).select(bands));                                                          //
+  // Sample the image                                                                                     //
+  return imgSr.sampleRegions({                                                                            //
+    collection: ee.FeatureCollection([newFeature]),                                                       //
+    properties: newFeature.propertyNames(),                                                               //
+    scale: 30,                                                                                            //
+    geometries: true                                                                                      //
+  });                                                                                                     //
+};                                                                                                        //
+// Join reflectance                                                                                       //
+var apesSampled = apesImage.map(extr).flatten();                                                          //
+print('Row count of dataset w/ sampled pixel values: ',apesSampled.size(),"(shrunk by clear mask)");      //
+print('Dataset w/ sampled pixel reflectance values (apesSampled): ',apesSampled.limit(10));               //
+                                                                                                          //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+                                          //////////////////////
+                                          //    EXPORT        //
+                                          //  & FINAL PRINT   //
+////////////////////////////////////////////                  //////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                                                //
+// var agg_geog415_groundTruth_master = apes                                                                                                      //
+// var agg_geog415_groundTruth_image = apesImage                                                                                                  //
+// var agg_geog415_groundTruth_sampled = apesSampled                                                                                              //
+// Export.table.toAsset(agg_geog415_groundTruth_master,"agg_geog415_groundTruth_master")                                                          //
+// Export.table.toAsset(agg_geog415_groundTruth_sampled,"agg_geog415_groundTruth_sampled")                                                        //
+//                                                                                                                                                //
+var agg_geog415_groundTruth_master = ee.FeatureCollection("users/leependu/geog415/u3/agg_geog415_groundTruth_master")                             //
+var agg_geog415_groundTruth_sampled = ee.FeatureCollection("users/leependu/geog415/u3/agg_geog415_groundTruth_sampled")                           //
+print('ONE ROW FROM MASTER GROUND TRUTH FEATURE COLLECTION: ','(agg_geog415_groundTruth_master)',agg_geog415_groundTruth_master.first())          //
+print('ONE ROW FROM TRAINING DATASET (w/ REFLECTANCE VALUES): ','(agg_geog415_groundTruth_sampled)',agg_geog415_groundTruth_sampled.first())      //
+print('2000 ROWS FROM MASTER GROUND TRUTH FEATURE COLLECTION: ','(agg_geog415_groundTruth_master)',agg_geog415_groundTruth_master.limit(2000))    //
+print('2000 ROWS FROM TRAINING DATASET (w/ REFLECTANCE VALUES): ','(agg_geog415_groundTruth_sampled)',agg_geog415_groundTruth_sampled.limit(2000))//
+print('On map: agoodman (my FC) and agg_geog415_groundTruth_master (merged class dataset)')                                                       //
+//                                                                                                                                                //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//              //                                                                                        //
+//  VISUALIZE   //                                                                                        //
+//              //                                                                                        //
+//////////////////                                                                                        //
+                                                                                                          //
+//// Palette                                                                                              //
+var paletteSeason = ee.Dictionary({                                                                       //
+  'Spring': 'yellow',                                                                                     //
+  'Summer': 'red',                                                                                        //
+  'Fall': 'blue',                                                                                         //
+  'Winter': 'white'                                                                                       //
+});                                                                                                       //
+var paletteClass = ee.Dictionary({                                                                        //
+  '1': 'white',                                                                                           //
+  '2': 'red',                                                                                             //
+  '3': 'chartreuse',                                                                                      //
+  '4': 'green',                                                                                           //
+  '5': 'blue',                                                                                            //
+  '6': 'black',                                                                                           //
+  '7': 'yellow'                                                                                           //
+});                                                                                                       //
+//// Make image with style                                                                                //
+var image1 = fc_u2_groundTruth_p43_r27_2024                                                               //
+  .map(function (feature) {                                                                               //
+    // Add a style-dictionary property using our chosen palette                                           //
+    return feature.set('myStyle', {                                                                       //
+      'color': paletteClass.get(feature.get('class')),                                                    //
+    });                                                                                                   //
+  })                                                                                                      //
+  .style({                                                                                                //
+    'styleProperty': 'myStyle',                                                                           //
+  });                                                                                                     //
+var image2 = agg_geog415_groundTruth_master                                                               //
+  .map(function (feature) {                                                                               //
+    // Add a style-dictionary property using our chosen palette                                           //
+    return feature.set('myStyle', {                                                                       //
+      'color': paletteClass.get(feature.get('class')),                                                    //
+    });                                                                                                   //
+  })                                                                                                      //
+  .style({                                                                                                //
+    'styleProperty': 'myStyle',                                                                           //
+  });                                                                                                     //
+// Map                                                                                                    //
+Map.setOptions('SATELLITE')                                                                               //
+Map.addLayer(image1, {}, "agoodman: my U2 ground truth submission");                                      //
+Map.addLayer(image2, {}, "agg_geog415_groundTruth_master: merged class dataset");                         //
+Map.centerObject(agg_geog415_groundTruth_master, 7)                                                       //
+                                                                                                          //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
