@@ -1,0 +1,196 @@
+/////////////////////////////////////////////////////////////////////////////////
+//                                                                             //
+//  `agg_geog415_u2_i_L8_r43_p27_20240712`                                     //
+//  Geog 415 Unit 2 Project:                                                   //
+//      GROUND TRUTH DIGITIZATION FOR i_L8_r43_p27_20240712                    //
+//  Aaron Goodman                                                              //
+//  2025-04-27                                                                 //
+//                                                                             //
+/////////////////////////////////////////////////////////////////////////////////
+
+var i_L8_r43_p27_20240712 = ee.Image("LANDSAT/LC08/C02/T1_L2/LC08_043027_20240712")
+
+var bandmap = {bands: ['SR_B4', 'SR_B3', 'SR_B2'], max: 20000}
+Map.addLayer(i_L8_r43_p27_20240712, bandmap);
+
+// Building FeatureCollection
+
+/// This is Summer 2024, where we found 5 suitable cloud-free images for digitization
+/// To obtain the desired 150 points = (5 images * 6 classes * 5 points)
+/// We will need 150/(5 images * 6 classes) = 5 points per landcover class
+/// (( So there will be 30 points sampled here ))
+
+//// Feature Geometry: Point locations
+////// Urban (1)
+var geom001 = ee.Geometry.Point(-117.370133, 47.659454)
+var geom002 = ee.Geometry.Point(-117.210771, 47.684693)
+var geom003 = ee.Geometry.Point(-117.404499, 47.74858)
+var geom004 = ee.Geometry.Point(-116.773496, 47.680971)
+var geom005 = ee.Geometry.Point(-116.779948, 47.773547)
+////// Agriculture (2)
+var geom006 = ee.Geometry.Point(-116.899669, 47.784361)
+var geom007 = ee.Geometry.Point(-117.780014, 47.530271)
+var geom008 = ee.Geometry.Point(-118.277864, 47.644917)
+var geom009 = ee.Geometry.Point(-118.327712, 47.255354)
+var geom010 = ee.Geometry.Point(-118.163286, 47.068819)
+////// Rangeland (3)
+var geom011 = ee.Geometry.Point(-117.913056, 47.464685)
+var geom012 = ee.Geometry.Point(-117.935227, 47.520381)
+var geom013 = ee.Geometry.Point(-117.566549, 47.538369)
+var geom014 = ee.Geometry.Point(-117.148081, 47.606165)
+var geom015 = ee.Geometry.Point(-117.358008, 47.387031)
+////// Forest (4)
+var geom016 = ee.Geometry.Point(-117.143143, 47.541776)
+var geom017 = ee.Geometry.Point(-117.128302, 47.762)
+var geom018 = ee.Geometry.Point(-117.571835, 48.03717)
+var geom019 = ee.Geometry.Point(-117.530853, 48.255488)
+var geom020 = ee.Geometry.Point(-117.093927, 48.286185)
+////// Water (5)
+var geom021 = ee.Geometry.Point(-117.110295, 48.300875)
+var geom022 = ee.Geometry.Point(-116.850839, 48.149173)
+var geom023 = ee.Geometry.Point(-116.478431, 48.000411)
+var geom024 = ee.Geometry.Point(-116.750555, 47.413525)
+var geom025 = ee.Geometry.Point(-116.802327, 47.555092)
+////// Barren (7)
+var geom026 = ee.Geometry.Point(-118.041318, 47.164636)
+var geom027 = ee.Geometry.Point(-117.927826, 47.275699)
+var geom028 = ee.Geometry.Point(-117.606826, 47.143023)
+var geom029 = ee.Geometry.Point(-118.199136, 46.814285)
+var geom030 = ee.Geometry.Point(-117.86617, 47.259445)
+//// Class dictionary
+var clasDict = {
+  'Urban or built-up': 1,
+  'Agriculture': 2,
+  'Rangeland': 3,
+  'Forest': 4,
+  'Water': 5,
+  'Barren': 7
+}
+//// Feature Properties: from dictionaries
+////// Urban (1)
+var dictClass1Urban = {
+  date: '2024-07-12',
+  season: 'Summer',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_8',
+  class: 1
+}
+var dictClass2Agri = {
+  date: '2024-07-12',
+  season: 'Summer',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_8',
+  class: 2
+}
+var dictClass3Range = {
+  date: '2024-07-12',
+  season: 'Summer',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_8',
+  class: 3
+}
+var dictClass4Forest = {
+  date: '2024-07-12',
+  season: 'Summer',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_8',
+  class: 4
+}
+var dictClass5Water = {
+  date: '2024-07-12',
+  season: 'Summer',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_8',
+  class: 5
+}
+var dictClass7Barren = {
+  date: '2024-07-12',
+  season: 'Summer',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_8',
+  class: 7
+}
+//// Construct features
+////// Urban (1)
+var ft001 = ee.Feature(geom001, dictClass1Urban)
+var ft002 = ee.Feature(geom002, dictClass1Urban)
+var ft003 = ee.Feature(geom003, dictClass1Urban)
+var ft004 = ee.Feature(geom004, dictClass1Urban)
+var ft005 = ee.Feature(geom005, dictClass1Urban)
+////// Agriculture (2)
+var ft006 = ee.Feature(geom006, dictClass2Agri)
+var ft007 = ee.Feature(geom007, dictClass2Agri)
+var ft008 = ee.Feature(geom008, dictClass2Agri)
+var ft009 = ee.Feature(geom009, dictClass2Agri)
+var ft010 = ee.Feature(geom010, dictClass2Agri)
+////// Rangeland (3)
+var ft011 = ee.Feature(geom011, dictClass3Range)
+var ft012 = ee.Feature(geom012, dictClass3Range)
+var ft013 = ee.Feature(geom013, dictClass3Range)
+var ft014 = ee.Feature(geom014, dictClass3Range)
+var ft015 = ee.Feature(geom015, dictClass3Range)
+////// Forest (4)
+var ft016 = ee.Feature(geom016, dictClass4Forest)
+var ft017 = ee.Feature(geom017, dictClass4Forest)
+var ft018 = ee.Feature(geom018, dictClass4Forest)
+var ft019 = ee.Feature(geom019, dictClass4Forest)
+var ft020 = ee.Feature(geom020, dictClass4Forest)
+////// Water (5)
+var ft021 = ee.Feature(geom021, dictClass5Water)
+var ft022 = ee.Feature(geom022, dictClass5Water)
+var ft023 = ee.Feature(geom023, dictClass5Water)
+var ft024 = ee.Feature(geom024, dictClass5Water)
+var ft025 = ee.Feature(geom025, dictClass5Water)
+////// Barren (7)
+var ft026 = ee.Feature(geom026, dictClass7Barren)
+var ft027 = ee.Feature(geom027, dictClass7Barren)
+var ft028 = ee.Feature(geom028, dictClass7Barren)
+var ft029 = ee.Feature(geom029, dictClass7Barren)
+var ft030 = ee.Feature(geom030, dictClass7Barren)
+//// Combine feature into fC
+var fC_i_L8_r43_p27_20240712 = ee.FeatureCollection([
+  ft001,ft002,ft003,ft004,ft005,
+  ft006,ft007,ft008,ft009,ft010,
+  ft011,ft012,ft013,ft014,ft015,
+  ft016,ft017,ft018,ft019,ft020,
+  ft021,ft022,ft023,ft024,ft025,
+  ft026,ft027,ft028,ft029,ft030])
+// Export fC
+Export.table.toAsset(fC_i_L8_r43_p27_20240712,"fC_i_L8_r43_p27_20240712")
+
+// Visualize
+//// Palette
+var paletteSeason = ee.Dictionary({
+  'Spring': 'yellow',
+  'Summer': 'red',
+  'Fall': 'blue',
+  'Winter': 'white'
+});
+var paletteClass = ee.Dictionary({
+  '1': 'white',
+  '2': 'red',
+  '3': 'chartreuse',
+  '4': 'green',
+  '5': 'blue',
+  '7': 'yellow'
+});
+//// Make image with style
+var image = fC_i_L8_r43_p27_20240712
+  .map(function (feature) {
+    // Add a style-dictionary property using our chosen palette
+    return feature.set('myStyle', {
+      'color': paletteClass.get(feature.get('class')),
+    });
+  })
+  .style({
+    'styleProperty': 'myStyle',
+  });
+//// Map
+Map.addLayer(image, {});
+Map.centerObject(fC_i_L8_r43_p27_20240712, 9)

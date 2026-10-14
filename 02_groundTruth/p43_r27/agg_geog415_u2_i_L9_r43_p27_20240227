@@ -1,0 +1,386 @@
+/////////////////////////////////////////////////////////////////////////////////
+//                                                                             //
+//  `agg_geog415_u2_i_L9_r43_p27_20240227`                                     //
+//  Geog 415 Unit 2 Project:                                                   //
+//      GROUND TRUTH DIGITIZATION FOR i_L9_r43_p27_20231225                    //
+//  Aaron Goodman                                                              //
+//  2025-04-27                                                                 //
+//                                                                             //
+/////////////////////////////////////////////////////////////////////////////////
+
+var i_L9_r43_p27_20240227 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20240227")
+
+var bandmap = {bands: ['SR_B4', 'SR_B3', 'SR_B2'], max: 20000}
+Map.addLayer(i_L9_r43_p27_20240227, bandmap);
+
+// Building FeatureCollection
+
+/// This is Winter 2024, where we found 1 suitable cloud-free image for digitization
+/// To obtain the desired 150 points = (5 images * 6 classes * 5 points)
+/// We will need 150/(1 image * 6 classes) = 25 points per landcover class
+/// (( So there *should* be 150 points sampled here ))
+/// But: [Spring:42*4=168 ; Summer:30*5=150 ; Fall:54*3=162 ; Spring+Summer+Fall=480]
+/// {{ I will only sample 120 (20 points per class) }}
+
+
+//// Feature Geometry: Point locations
+////// Urban (1)
+var geom001 = ee.Geometry.Point(-117.536723, 47.624535)
+var geom002 = ee.Geometry.Point(-117.647195, 47.626186)
+var geom003 = ee.Geometry.Point(-117.380683, 47.61363)
+var geom004 = ee.Geometry.Point(-117.423255, 47.655693)
+var geom005 = ee.Geometry.Point(-117.407377, 47.717502)
+var geom006 = ee.Geometry.Point(-117.318391, 47.665348)
+var geom007 = ee.Geometry.Point(-117.2475, 47.656815)
+var geom008 = ee.Geometry.Point(-117.208889, 47.685101)
+var geom009 = ee.Geometry.Point(-116.785837, 47.70064)
+var geom010 = ee.Geometry.Point(-117.546591, 47.596382)
+var geom011 = ee.Geometry.Point(-117.584671, 47.65371)
+var geom012 = ee.Geometry.Point(-116.796212, 47.739977)
+var geom013 = ee.Geometry.Point(-117.009208, 47.699603)
+var geom014 = ee.Geometry.Point(-116.944173, 47.720147)
+var geom015 = ee.Geometry.Point(-116.847359, 47.741049)
+var geom016 = ee.Geometry.Point(-116.777221, 47.675368)
+var geom017 = ee.Geometry.Point(-116.788014, 47.808673)
+var geom018 = ee.Geometry.Point(-116.900045, 47.801813)
+var geom019 = ee.Geometry.Point(-116.702348, 47.906553)
+var geom020 = ee.Geometry.Point(-116.865631, 47.975696)
+////// Agriculture (2)
+var geom021 = ee.Geometry.Point(-116.868592, 47.797343)
+var geom022 = ee.Geometry.Point(-118.272788, 47.092885)
+var geom023 = ee.Geometry.Point(-118.337415, 47.08498)
+var geom024 = ee.Geometry.Point(-118.598087, 47.137511)
+var geom025 = ee.Geometry.Point(-118.413724, 46.858223)
+var geom026 = ee.Geometry.Point(-118.363668, 46.998378)
+var geom027 = ee.Geometry.Point(-118.271114, 47.092326)
+var geom028 = ee.Geometry.Point(-118.273989, 47.121658)
+var geom029 = ee.Geometry.Point(-118.30678, 47.134217)
+var geom030 = ee.Geometry.Point(-116.929725, 47.76302)
+var geom031 = ee.Geometry.Point(-118.229784, 47.583613)
+var geom032 = ee.Geometry.Point(-118.168087, 47.624949)
+var geom033 = ee.Geometry.Point(-116.889259, 47.750717)
+var geom034 = ee.Geometry.Point(-117.732105, 47.512132)
+var geom035 = ee.Geometry.Point(-117.722266, 47.608458)
+var geom036 = ee.Geometry.Point(-117.776651, 47.607646)
+var geom037 = ee.Geometry.Point(-117.735443, 47.278135)
+var geom038 = ee.Geometry.Point(-118.268784, 46.858065)
+var geom039 = ee.Geometry.Point(-118.460576, 46.827631)
+var geom040 = ee.Geometry.Point(-118.240291, 47.160741)
+////// Rangeland (3)
+var geom041 = ee.Geometry.Point(-118.329327, 47.077733)
+var geom042 = ee.Geometry.Point(-118.275074, 47.142879)
+var geom043 = ee.Geometry.Point(-118.254568, 47.143014)
+var geom044 = ee.Geometry.Point(-118.198801, 47.141142)
+var geom045 = ee.Geometry.Point(-118.466145, 46.966255)
+var geom046 = ee.Geometry.Point(-118.61756, 46.944986)
+var geom047 = ee.Geometry.Point(-118.385848, 46.832577)
+var geom048 = ee.Geometry.Point(-117.70918, 46.997253)
+var geom049 = ee.Geometry.Point(-117.707138, 47.025782)
+var geom050 = ee.Geometry.Point(-118.146437, 47.622519)
+var geom051 = ee.Geometry.Point(-118.024973, 47.628665)
+var geom052 = ee.Geometry.Point(-118.500981, 47.114746)
+var geom053 = ee.Geometry.Point(-118.457757, 47.136389)
+var geom054 = ee.Geometry.Point(-118.3947, 47.151105)
+var geom055 = ee.Geometry.Point(-118.393818, 47.079268)
+var geom056 = ee.Geometry.Point(-118.391032, 47.052736)
+var geom057 = ee.Geometry.Point(-118.289757, 46.931845)
+var geom058 = ee.Geometry.Point(-118.072876, 47.006213)
+var geom059 = ee.Geometry.Point(-117.834639, 47.137213)
+var geom060 = ee.Geometry.Point(-117.794169, 47.182108)
+////// Forest (4)
+var geom061 = ee.Geometry.Point(-117.553475, 48.241492)
+var geom062 = ee.Geometry.Point(-117.62349, 48.324534)
+var geom063 = ee.Geometry.Point(-117.551096, 48.343589)
+var geom064 = ee.Geometry.Point(-117.660101, 48.386956)
+var geom065 = ee.Geometry.Point(-117.142479, 47.749937)
+var geom066 = ee.Geometry.Point(-117.126429, 47.770856)
+var geom067 = ee.Geometry.Point(-117.11658, 47.793147)
+var geom068 = ee.Geometry.Point(-117.112178, 47.851014)
+var geom069 = ee.Geometry.Point(-117.166183, 47.89303)
+var geom070 = ee.Geometry.Point(-117.896372, 47.907228)
+var geom071 = ee.Geometry.Point(-117.976702, 47.932879)
+var geom072 = ee.Geometry.Point(-117.772388, 47.995236)
+var geom073 = ee.Geometry.Point(-117.857561, 47.959894)
+var geom074 = ee.Geometry.Point(-117.957884, 47.989099)
+var geom075 = ee.Geometry.Point(-117.535573, 48.092686)
+var geom076 = ee.Geometry.Point(-117.442386, 48.090609)
+var geom077 = ee.Geometry.Point(-117.412739, 48.235149)
+var geom078 = ee.Geometry.Point(-117.440201, 48.265295)
+var geom079 = ee.Geometry.Point(-117.128085, 47.549485)
+var geom080 = ee.Geometry.Point(-117.113577, 47.575421)
+////// Water (5)
+var geom081 = ee.Geometry.Point(-117.704817, 47.156788)
+var geom082 = ee.Geometry.Point(-117.645455, 47.212819)
+var geom083 = ee.Geometry.Point(-118.06829, 47.255632)
+var geom084 = ee.Geometry.Point(-116.707558, 47.626439)
+var geom085 = ee.Geometry.Point(-116.800014, 47.665753)
+var geom086 = ee.Geometry.Point(-116.804992, 47.580815)
+var geom087 = ee.Geometry.Point(-116.906585, 47.479633)
+var geom088 = ee.Geometry.Point(-118.186014, 47.917427)
+var geom089 = ee.Geometry.Point(-118.058867, 47.796578)
+var geom090 = ee.Geometry.Point(-117.810627, 47.818476)
+var geom091 = ee.Geometry.Point(-117.657058, 47.843901)
+var geom092 = ee.Geometry.Point(-117.654395, 47.559635)
+var geom093 = ee.Geometry.Point(-117.075436, 47.643867)
+var geom094 = ee.Geometry.Point(-117.184799, 47.651395)
+var geom095 = ee.Geometry.Point(-117.695255, 47.525584)
+var geom096 = ee.Geometry.Point(-117.711181, 47.578503)
+var geom097 = ee.Geometry.Point(-117.799259, 47.280697)
+var geom098 = ee.Geometry.Point(-117.684096, 47.32709)
+var geom099 = ee.Geometry.Point(-118.120162, 47.834901)
+var geom100 = ee.Geometry.Point(-117.567598, 47.799332)
+////// Barren (7)
+var geom101 = ee.Geometry.Point(-118.60212, 46.844384)
+var geom102 = ee.Geometry.Point(-118.576552, 46.986131)
+var geom103 = ee.Geometry.Point(-118.498856, 47.023399)
+var geom104 = ee.Geometry.Point(-118.17506, 47.019732)
+var geom105 = ee.Geometry.Point(-117.424068, 47.188676)
+var geom106 = ee.Geometry.Point(-118.099397, 47.557564)
+var geom107 = ee.Geometry.Point(-118.104023, 47.420939)
+var geom108 = ee.Geometry.Point(-117.917341, 47.462675)
+var geom109 = ee.Geometry.Point(-117.613478, 47.522729)
+var geom110 = ee.Geometry.Point(-118.127948, 47.439041)
+var geom111 = ee.Geometry.Point(-118.082397, 47.640907)
+var geom112 = ee.Geometry.Point(-117.772407, 47.684024)
+var geom113 = ee.Geometry.Point(-118.082677, 47.728508)
+var geom114 = ee.Geometry.Point(-118.2333, 47.737327)
+var geom115 = ee.Geometry.Point(-118.354411, 47.620931)
+var geom116 = ee.Geometry.Point(-118.355343, 47.665134)
+var geom117 = ee.Geometry.Point(-118.372754, 47.707364)
+var geom118 = ee.Geometry.Point(-118.231988, 47.783976)
+var geom119 = ee.Geometry.Point(-118.094311, 47.947633)
+var geom120 = ee.Geometry.Point(-117.333557, 48.012285)
+//// Class dictionary
+var clasDict = {
+  'Urban or built-up': 1,
+  'Agriculture': 2,
+  'Rangeland': 3,
+  'Forest': 4,
+  'Water': 5,
+  'Barren': 7
+}
+//// Feature Properties: from dictionaries
+////// Urban (1)
+var dictClass1Urban = {
+  date: '2024-02-27',
+  season: 'Winter',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_9',
+  class: 1
+}
+var dictClass2Agri = {
+  date: '2024-02-27',
+  season: 'Winter',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_9',
+  class: 2
+}
+var dictClass3Range = {
+  date: '2024-02-27',
+  season: 'Winter',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_9',
+  class: 3
+}
+var dictClass4Forest = {
+  date: '2024-02-27',
+  season: 'Winter',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_9',
+  class: 4
+}
+var dictClass5Water = {
+  date: '2024-02-27',
+  season: 'Winter',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_9',
+  class: 5
+}
+var dictClass7Barren = {
+  date: '2024-02-27',
+  season: 'Winter',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_9',
+  class: 7
+}
+//// Construct features
+////// Urban (1)
+var ft001 = ee.Feature(geom001, dictClass1Urban)
+var ft002 = ee.Feature(geom002, dictClass1Urban)
+var ft003 = ee.Feature(geom003, dictClass1Urban)
+var ft004 = ee.Feature(geom004, dictClass1Urban)
+var ft005 = ee.Feature(geom005, dictClass1Urban)
+var ft006 = ee.Feature(geom006, dictClass1Urban)
+var ft007 = ee.Feature(geom007, dictClass1Urban)
+var ft008 = ee.Feature(geom008, dictClass1Urban)
+var ft009 = ee.Feature(geom009, dictClass1Urban)
+var ft010 = ee.Feature(geom010, dictClass1Urban)
+var ft011 = ee.Feature(geom011, dictClass1Urban)
+var ft012 = ee.Feature(geom012, dictClass1Urban)
+var ft013 = ee.Feature(geom013, dictClass1Urban)
+var ft014 = ee.Feature(geom014, dictClass1Urban)
+var ft015 = ee.Feature(geom015, dictClass1Urban)
+var ft016 = ee.Feature(geom016, dictClass1Urban)
+var ft017 = ee.Feature(geom017, dictClass1Urban)
+var ft018 = ee.Feature(geom018, dictClass1Urban)
+var ft019 = ee.Feature(geom019, dictClass1Urban)
+var ft020 = ee.Feature(geom020, dictClass1Urban)
+////// Agriculture (2)
+var ft021 = ee.Feature(geom021, dictClass2Agri)
+var ft022 = ee.Feature(geom022, dictClass2Agri)
+var ft023 = ee.Feature(geom023, dictClass2Agri)
+var ft024 = ee.Feature(geom024, dictClass2Agri)
+var ft025 = ee.Feature(geom025, dictClass2Agri)
+var ft026 = ee.Feature(geom026, dictClass2Agri)
+var ft027 = ee.Feature(geom027, dictClass2Agri)
+var ft028 = ee.Feature(geom028, dictClass2Agri)
+var ft029 = ee.Feature(geom029, dictClass2Agri)
+var ft030 = ee.Feature(geom030, dictClass2Agri)
+var ft031 = ee.Feature(geom031, dictClass2Agri)
+var ft032 = ee.Feature(geom032, dictClass2Agri)
+var ft033 = ee.Feature(geom033, dictClass2Agri)
+var ft034 = ee.Feature(geom034, dictClass2Agri)
+var ft035 = ee.Feature(geom035, dictClass2Agri)
+var ft036 = ee.Feature(geom036, dictClass2Agri)
+var ft037 = ee.Feature(geom037, dictClass2Agri)
+var ft038 = ee.Feature(geom038, dictClass2Agri)
+var ft039 = ee.Feature(geom039, dictClass2Agri)
+var ft040 = ee.Feature(geom040, dictClass2Agri)
+////// Rangeland (3)
+var ft041 = ee.Feature(geom041, dictClass3Range)
+var ft042 = ee.Feature(geom042, dictClass3Range)
+var ft043 = ee.Feature(geom043, dictClass3Range)
+var ft044 = ee.Feature(geom044, dictClass3Range)
+var ft045 = ee.Feature(geom045, dictClass3Range)
+var ft046 = ee.Feature(geom046, dictClass3Range)
+var ft047 = ee.Feature(geom047, dictClass3Range)
+var ft048 = ee.Feature(geom048, dictClass3Range)
+var ft049 = ee.Feature(geom049, dictClass3Range)
+var ft050 = ee.Feature(geom050, dictClass3Range)
+var ft051 = ee.Feature(geom051, dictClass3Range)
+var ft052 = ee.Feature(geom052, dictClass3Range)
+var ft053 = ee.Feature(geom053, dictClass3Range)
+var ft054 = ee.Feature(geom054, dictClass3Range)
+var ft055 = ee.Feature(geom055, dictClass3Range)
+var ft056 = ee.Feature(geom056, dictClass3Range)
+var ft057 = ee.Feature(geom057, dictClass3Range)
+var ft058 = ee.Feature(geom058, dictClass3Range)
+var ft059 = ee.Feature(geom059, dictClass3Range)
+var ft060 = ee.Feature(geom060, dictClass3Range)
+////// Forest (4)
+var ft061 = ee.Feature(geom061, dictClass4Forest)
+var ft062 = ee.Feature(geom062, dictClass4Forest)
+var ft063 = ee.Feature(geom063, dictClass4Forest)
+var ft064 = ee.Feature(geom064, dictClass4Forest)
+var ft065 = ee.Feature(geom065, dictClass4Forest)
+var ft066 = ee.Feature(geom066, dictClass4Forest)
+var ft067 = ee.Feature(geom067, dictClass4Forest)
+var ft068 = ee.Feature(geom068, dictClass4Forest)
+var ft069 = ee.Feature(geom069, dictClass4Forest)
+var ft070 = ee.Feature(geom070, dictClass4Forest)
+var ft071 = ee.Feature(geom071, dictClass4Forest)
+var ft072 = ee.Feature(geom072, dictClass4Forest)
+var ft073 = ee.Feature(geom073, dictClass4Forest)
+var ft074 = ee.Feature(geom074, dictClass4Forest)
+var ft075 = ee.Feature(geom075, dictClass4Forest)
+var ft076 = ee.Feature(geom076, dictClass4Forest)
+var ft077 = ee.Feature(geom077, dictClass4Forest)
+var ft078 = ee.Feature(geom078, dictClass4Forest)
+var ft079 = ee.Feature(geom079, dictClass4Forest)
+var ft080 = ee.Feature(geom080, dictClass4Forest)
+////// Water (5)
+var ft081 = ee.Feature(geom081, dictClass5Water)
+var ft082 = ee.Feature(geom082, dictClass5Water)
+var ft083 = ee.Feature(geom083, dictClass5Water)
+var ft084 = ee.Feature(geom084, dictClass5Water)
+var ft085 = ee.Feature(geom085, dictClass5Water)
+var ft086 = ee.Feature(geom086, dictClass5Water)
+var ft087 = ee.Feature(geom087, dictClass5Water)
+var ft088 = ee.Feature(geom088, dictClass5Water)
+var ft089 = ee.Feature(geom089, dictClass5Water)
+var ft090 = ee.Feature(geom090, dictClass5Water)
+var ft091 = ee.Feature(geom091, dictClass5Water)
+var ft092 = ee.Feature(geom092, dictClass5Water)
+var ft093 = ee.Feature(geom093, dictClass5Water)
+var ft094 = ee.Feature(geom094, dictClass5Water)
+var ft095 = ee.Feature(geom095, dictClass5Water)
+var ft096 = ee.Feature(geom096, dictClass5Water)
+var ft097 = ee.Feature(geom097, dictClass5Water)
+var ft098 = ee.Feature(geom098, dictClass5Water)
+var ft099 = ee.Feature(geom099, dictClass5Water)
+var ft100 = ee.Feature(geom100, dictClass5Water)
+////// Barren (7)
+var ft101 = ee.Feature(geom101, dictClass7Barren)
+var ft102 = ee.Feature(geom102, dictClass7Barren)
+var ft103 = ee.Feature(geom103, dictClass7Barren)
+var ft104 = ee.Feature(geom104, dictClass7Barren)
+var ft105 = ee.Feature(geom105, dictClass7Barren)
+var ft106 = ee.Feature(geom106, dictClass7Barren)
+var ft107 = ee.Feature(geom107, dictClass7Barren)
+var ft108 = ee.Feature(geom108, dictClass7Barren)
+var ft109 = ee.Feature(geom109, dictClass7Barren)
+var ft110 = ee.Feature(geom110, dictClass7Barren)
+var ft111 = ee.Feature(geom111, dictClass7Barren)
+var ft112 = ee.Feature(geom112, dictClass7Barren)
+var ft113 = ee.Feature(geom113, dictClass7Barren)
+var ft114 = ee.Feature(geom114, dictClass7Barren)
+var ft115 = ee.Feature(geom115, dictClass7Barren)
+var ft116 = ee.Feature(geom116, dictClass7Barren)
+var ft117 = ee.Feature(geom117, dictClass7Barren)
+var ft118 = ee.Feature(geom118, dictClass7Barren)
+var ft119 = ee.Feature(geom119, dictClass7Barren)
+var ft120 = ee.Feature(geom120, dictClass7Barren)
+//// Combine feature into fC
+var fC_i_L9_r43_p27_20240227 = ee.FeatureCollection([
+  ft001,ft002,ft003,ft004,ft005,ft006,ft007,ft008,ft009,ft010,
+  ft011,ft012,ft013,ft014,ft015,ft016,ft017,ft018,ft019,ft020,
+  ft021,ft022,ft023,ft024,ft025,ft026,ft027,ft028,ft029,ft030,
+  ft031,ft032,ft033,ft034,ft035,ft036,ft037,ft038,ft039,ft040,
+  ft041,ft042,ft043,ft044,ft045,ft046,ft047,ft048,ft049,ft050,
+  ft051,ft052,ft053,ft054,ft055,ft056,ft057,ft058,ft059,ft060,
+  ft061,ft062,ft063,ft064,ft065,ft066,ft067,ft068,ft069,ft070,
+  ft071,ft072,ft073,ft074,ft075,ft076,ft077,ft078,ft079,ft080,
+  ft081,ft082,ft083,ft084,ft085,ft086,ft087,ft088,ft089,ft090,
+  ft091,ft092,ft093,ft094,ft095,ft096,ft097,ft098,ft099,ft100,
+  ft101,ft102,ft103,ft104,ft105,ft106,ft107,ft108,ft109,ft110,
+  ft111,ft112,ft113,ft114,ft115,ft116,ft117,ft118,ft119,ft120])
+// Export fC
+Export.table.toAsset(fC_i_L9_r43_p27_20240227,"fC_i_L9_r43_p27_20240227")
+
+
+// Visualize
+//// Palette
+var paletteSeason = ee.Dictionary({
+  'Spring': 'yellow',
+  'Summer': 'red',
+  'Fall': 'blue',
+  'Winter': 'white'
+});
+var paletteClass = ee.Dictionary({
+  '1': 'white',
+  '2': 'red',
+  '3': 'chartreuse',
+  '4': 'green',
+  '5': 'blue',
+  '7': 'yellow'
+});
+//// Make image with style
+var image = fC_i_L9_r43_p27_20240227
+  .map(function (feature) {
+    // Add a style-dictionary property using our chosen palette
+    return feature.set('myStyle', {
+      'color': paletteClass.get(feature.get('class')),
+    });
+  })
+  .style({
+    'styleProperty': 'myStyle',
+  });
+//// Map
+Map.addLayer(image, {});
+Map.centerObject(fC_i_L9_r43_p27_20240227, 9)

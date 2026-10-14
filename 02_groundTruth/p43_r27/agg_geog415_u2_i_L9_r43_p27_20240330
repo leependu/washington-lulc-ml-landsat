@@ -1,0 +1,220 @@
+/////////////////////////////////////////////////////////////////////////////////
+//                                                                             //
+//  `agg_geog415_u2_i_L9_r43_p27_20240330`                                     //
+//  Geog 415 Unit 2 Project:                                                   //
+//      GROUND TRUTH DIGITIZATION FOR i_L9_r43_p27_20240330                    //
+//  Aaron Goodman                                                              //
+//  2025-04-27                                                                 //
+//                                                                             //
+/////////////////////////////////////////////////////////////////////////////////
+
+var i_L9_r43_p27_20240330 = ee.Image("LANDSAT/LC09/C02/T1_L2/LC09_043027_20240330")
+
+var bandmap = {bands: ['SR_B4', 'SR_B3', 'SR_B2'], max: 20000}
+Map.addLayer(i_L9_r43_p27_20240330, bandmap);
+
+// Building FeatureCollection
+
+/// This is Spring 2024, where we found 4 suitable cloud-free images for digitization
+/// To obtain the desired 150 points = (5 images * 6 classes * 5 points)
+/// We will need 150/(4 images * 6 classes) = ~7 points per landcover class
+/// (( So there will be 42 points sampled here ))
+
+//// Feature Geometry: Point locations
+////// Urban (1)
+var geom001 = ee.Geometry.Point(-117.423814, 47.656008)
+var geom002 = ee.Geometry.Point(-117.329872, 47.653926)
+var geom003 = ee.Geometry.Point(-117.191797, 47.686818)
+var geom004 = ee.Geometry.Point(-117.08364, 47.677347)
+var geom005 = ee.Geometry.Point(-116.567387, 47.315795)
+var geom006 = ee.Geometry.Point(-116.772631, 47.67971)
+var geom007 = ee.Geometry.Point(-116.788613, 47.787837)
+////// Agriculture (2)
+var geom008 = ee.Geometry.Point(-116.865842, 47.798551)
+var geom009 = ee.Geometry.Point(-118.338296, 47.085625)
+var geom010 = ee.Geometry.Point(-118.401091, 47.200048)
+var geom011 = ee.Geometry.Point(-118.583502, 47.225337)
+var geom012 = ee.Geometry.Point(-117.721171, 47.607722)
+var geom013 = ee.Geometry.Point(-117.589181, 47.738814)
+var geom014 = ee.Geometry.Point(-117.743616, 47.500333)
+////// Rangeland (3)
+var geom015 = ee.Geometry.Point(-117.739, 47.682787)
+var geom016 = ee.Geometry.Point(-117.927193, 47.110068)
+var geom017 = ee.Geometry.Point(-118.299675, 47.16523)
+var geom018 = ee.Geometry.Point(-118.158955, 47.242334)
+var geom019 = ee.Geometry.Point(-117.487004, 47.260685)
+var geom020 = ee.Geometry.Point(-117.449404, 47.106089)
+var geom021 = ee.Geometry.Point(-117.288391, 47.284068)
+////// Forest (4)
+var geom022 = ee.Geometry.Point(-117.115004, 47.573057)
+var geom023 = ee.Geometry.Point(-117.100755, 47.732451)
+var geom024 = ee.Geometry.Point(-116.650895, 47.717165)
+var geom025 = ee.Geometry.Point(-116.42811, 47.969431)
+var geom026 = ee.Geometry.Point(-116.415343, 48.059359)
+var geom027 = ee.Geometry.Point(-117.856366, 47.943093)
+var geom028 = ee.Geometry.Point(-117.320721, 48.116505)
+////// Water (5)
+var geom029 = ee.Geometry.Point(-116.483676, 48.028542)
+var geom030 = ee.Geometry.Point(-116.84601, 47.506971)
+var geom031 = ee.Geometry.Point(-116.765811, 47.422988)
+var geom032 = ee.Geometry.Point(-116.752507, 47.362865)
+var geom033 = ee.Geometry.Point(-117.078956, 47.646474)
+var geom034 = ee.Geometry.Point(-117.800487, 47.815985)
+var geom035 = ee.Geometry.Point(-118.057192, 47.796697)
+////// Barren (7)
+var geom036 = ee.Geometry.Point(-118.439281, 47.590514)
+var geom037 = ee.Geometry.Point(-118.050718, 47.195815)
+var geom038 = ee.Geometry.Point(-117.932488, 47.481452)
+var geom039 = ee.Geometry.Point(-118.475935, 47.017979)
+var geom040 = ee.Geometry.Point(-118.62141, 46.862601)
+var geom041 = ee.Geometry.Point(-118.23971, 46.7639)
+var geom042 = ee.Geometry.Point(-118.004955, 46.924979)
+//// Class dictionary
+var clasDict = {
+  'Urban or built-up': 1,
+  'Agriculture': 2,
+  'Rangeland': 3,
+  'Forest': 4,
+  'Water': 5,
+  'Barren': 7
+}
+//// Feature Properties: from dictionaries
+////// Urban (1)
+var dictClass1Urban = {
+  date: '2024-03-30',
+  season: 'Spring',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_9',
+  class: 1
+}
+var dictClass2Agri = {
+  date: '2024-03-30',
+  season: 'Spring',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_9',
+  class: 2
+}
+var dictClass3Range = {
+  date: '2024-03-30',
+  season: 'Spring',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_9',
+  class: 3
+}
+var dictClass4Forest = {
+  date: '2024-03-30',
+  season: 'Spring',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_9',
+  class: 4
+}
+var dictClass5Water = {
+  date: '2024-03-30',
+  season: 'Spring',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_9',
+  class: 5
+}
+var dictClass7Barren = {
+  date: '2024-03-30',
+  season: 'Spring',
+  path: 43,
+  row: 27,
+  id: 'LANDSAT_9',
+  class: 7
+}
+//// Construct features
+////// Urban (1)
+var ft001 = ee.Feature(geom001, dictClass1Urban)
+var ft002 = ee.Feature(geom002, dictClass1Urban)
+var ft003 = ee.Feature(geom003, dictClass1Urban)
+var ft004 = ee.Feature(geom004, dictClass1Urban)
+var ft005 = ee.Feature(geom005, dictClass1Urban)
+var ft006 = ee.Feature(geom006, dictClass1Urban)
+var ft007 = ee.Feature(geom007, dictClass1Urban)
+////// Agriculture (2)
+var ft008 = ee.Feature(geom008, dictClass2Agri)
+var ft009 = ee.Feature(geom009, dictClass2Agri)
+var ft010 = ee.Feature(geom010, dictClass2Agri)
+var ft011 = ee.Feature(geom011, dictClass2Agri)
+var ft012 = ee.Feature(geom012, dictClass2Agri)
+var ft013 = ee.Feature(geom013, dictClass2Agri)
+var ft014 = ee.Feature(geom014, dictClass2Agri)
+////// Rangeland (3)
+var ft015 = ee.Feature(geom015, dictClass3Range)
+var ft016 = ee.Feature(geom016, dictClass3Range)
+var ft017 = ee.Feature(geom017, dictClass3Range)
+var ft018 = ee.Feature(geom018, dictClass3Range)
+var ft019 = ee.Feature(geom019, dictClass3Range)
+var ft020 = ee.Feature(geom020, dictClass3Range)
+var ft021 = ee.Feature(geom021, dictClass3Range)
+////// Forest (4)
+var ft022 = ee.Feature(geom022, dictClass4Forest)
+var ft023 = ee.Feature(geom023, dictClass4Forest)
+var ft024 = ee.Feature(geom024, dictClass4Forest)
+var ft025 = ee.Feature(geom025, dictClass4Forest)
+var ft026 = ee.Feature(geom026, dictClass4Forest)
+var ft027 = ee.Feature(geom027, dictClass4Forest)
+var ft028 = ee.Feature(geom028, dictClass4Forest)
+////// Water (5)
+var ft029 = ee.Feature(geom029, dictClass5Water)
+var ft030 = ee.Feature(geom030, dictClass5Water)
+var ft031 = ee.Feature(geom031, dictClass5Water)
+var ft032 = ee.Feature(geom032, dictClass5Water)
+var ft033 = ee.Feature(geom033, dictClass5Water)
+var ft034 = ee.Feature(geom034, dictClass5Water)
+var ft035 = ee.Feature(geom035, dictClass5Water)
+////// Barren (7)
+var ft036 = ee.Feature(geom036, dictClass7Barren)
+var ft037 = ee.Feature(geom037, dictClass7Barren)
+var ft038 = ee.Feature(geom038, dictClass7Barren)
+var ft039 = ee.Feature(geom039, dictClass7Barren)
+var ft040 = ee.Feature(geom040, dictClass7Barren)
+var ft041 = ee.Feature(geom041, dictClass7Barren)
+var ft042 = ee.Feature(geom042, dictClass7Barren)
+//// Combine feature into fC
+var fC_i_L9_r43_p27_20240330 = ee.FeatureCollection([
+  ft001,ft002,ft003,ft004,ft005,ft006,ft007,
+  ft008,ft009,ft010,ft011,ft012,ft013,ft014,
+  ft015,ft016,ft017,ft018,ft019,ft020,ft021,
+  ft022,ft023,ft024,ft025,ft026,ft027,ft028,
+  ft029,ft030,ft031,ft032,ft033,ft034,ft035,
+  ft036,ft037,ft038,ft039,ft040,ft041,ft042])
+// Export fC
+Export.table.toAsset(fC_i_L9_r43_p27_20240330,"fC_i_L9_r43_p27_20240330")
+
+// Visualize
+//// Palette
+var paletteSeason = ee.Dictionary({
+  'Spring': 'yellow',
+  'Summer': 'red',
+  'Fall': 'blue',
+  'Winter': 'white'
+});
+var paletteClass = ee.Dictionary({
+  '1': 'white',
+  '2': 'red',
+  '3': 'chartreuse',
+  '4': 'green',
+  '5': 'blue',
+  '7': 'yellow'
+});
+//// Make image with style
+var image = fC_i_L9_r43_p27_20240330
+  .map(function (feature) {
+    // Add a style-dictionary property using our chosen palette
+    return feature.set('myStyle', {
+      'color': paletteClass.get(feature.get('class')),
+    });
+  })
+  .style({
+    'styleProperty': 'myStyle',
+  });
+//// Map
+Map.addLayer(image, {});
+Map.centerObject(fC_i_L9_r43_p27_20240330, 9)
