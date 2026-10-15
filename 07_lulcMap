@@ -62,3 +62,28 @@ var thumbImage = classified2022.visualize(classVis)
 print('Gallery thumbnail (2022):')
 print(ui.Thumbnail({image: thumbImage, params: thumbParams}))
 print('Full-size PNG, open and save:', thumbImage.getThumbURL(thumbParams))
+
+// Change Map, 2017 to 2022
+//// Stable pixels in dark grey, changed pixels in the color of their 2022 class.
+//// Masked where either year has no data, so gaps don't read as change.
+var change = classified2022
+  .where(classified2017.eq(classified2022), 0)
+  .updateMask(classified2017.mask())
+var changeVis = {
+  min: 0,
+  max: 7,
+  palette: ['404040', 'eb0000', 'ab6c28', 'dfdfc2', '1c5f2c', '476ba1', '000000', 'b3ac9f']
+}
+Map.addLayer(change, changeVis, 'Change 2017-2022 (grey = stable)', false)
+
+// Figures for the aggis.org project page
+//// 2000 x 2000 PNGs, same region and projection as the thumbnail. No legend
+//// is drawn in; the page has its own. Open each link and save.
+var figureParams = {
+  region: thumbRegion,
+  dimensions: '2000x2000',
+  crs: 'EPSG:3857',
+  format: 'png'
+}
+print('Page figure, land cover 2022:', thumbImage.getThumbURL(figureParams))
+print('Page figure, change 2017-2022:', change.visualize(changeVis).getThumbURL(figureParams))
