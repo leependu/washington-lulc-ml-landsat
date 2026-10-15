@@ -40,7 +40,7 @@ function harmoFc (feature) {                                                    
 }                                                                                                                 //
                                                                                                                   //
 var agg_geog415_groundTruth_hrmnzd = agg_geog415_groundTruth_master.map(harmoFc)                                  //
-print('Harmonized GT data:','(agg_geog415_groundTruth_hrmnzd)',agg_geog415_groundTruth_master.first())            //
+print('Harmonized GT data:','(agg_geog415_groundTruth_hrmnzd)',agg_geog415_groundTruth_hrmnzd.first())            //
 print('Size of harmonized GT data:',agg_geog415_groundTruth_hrmnzd.size())                                        //
                                                                                                                   //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
