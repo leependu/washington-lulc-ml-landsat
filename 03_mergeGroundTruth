@@ -14,7 +14,7 @@
 // 
 // The code that I used to import, merge, and export my Feature Collection has all been commented out.
 // My Feature Collection `agg_u2_featColl` is now imported from its GEE Legacy Asset address: 
-//     "users/leependu/geog415/u2/agg_u2_featColl"    (line 118)
+//     "users/leependu/geog415/u2/agg_u2_featColl"    (line 108)
 // This asset should have read access granted to all users.
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -49,23 +49,12 @@ Map.addLayer(i_L8_r43_p27_20240423, bandmap)                                    
 //                                                                                                                //
 // Creating the Ground Truth Feature Collections                                                                  //
 //                                                                                                                //
-// fC_i_L9_r43_p27_20240227: https://code.earthengine.google.com/647d46dd41af0491f70eb5bc56762db1                 //
-// fC_i_L8_r43_p27_20240423: https://code.earthengine.google.com/dfa8f82e8f9031ae0846dd25fe540320                 //
-// fC_i_L8_r43_p27_20240509: https://code.earthengine.google.com/cd9e61b6505152fe2bb528ee0332b695                 //
-// fC_i_L9_r43_p27_20240314: https://code.earthengine.google.com/36f968a76895b8f7619fb1182f5134be                 //
-// fC_i_L9_r43_p27_20240330: https://code.earthengine.google.com/3e0847004b1a76650bf9ebd55ba18bfe                 //
-// fC_i_L8_r43_p27_20240712: https://code.earthengine.google.com/d6dabac4620b8c0a0e4b7044854e98a8                 //
-// fC_i_L8_r43_p27_20240728: https://code.earthengine.google.com/7f9f7dd8fe95355c493a1af6be89a04c                 //
-// fC_i_L8_r43_p27_20240829: https://code.earthengine.google.com/084b3d0b8e324f3611a1417ca29a183a                 //
-// fC_i_L9_r43_p27_20240704: https://code.earthengine.google.com/b946014f9e5784f0ea6146d4f7e9edb6                 //
-// fC_i_L9_r43_p27_20240720: https://code.earthengine.google.com/67d38b00d8cd1e8c056e1899d25e2a22                 //
-// fC_i_L8_r43_p27_20240930: https://code.earthengine.google.com/1e24854a76eda108f0c26061e24dc48f                 //
-// fC_i_L9_r43_p27_20240906: https://code.earthengine.google.com/3e23469745a13997dcb325a458465b78                 //
-// fC_i_L9_r43_p27_20241008: https://code.earthengine.google.com/b4d383bf7c5836cc876471f708e7dcc7                 //
+// One digitization script per scene, each exporting one of the fC_* assets imported below:                       //
+//     02_groundTruth/p43_r27/  (this repository)                                                                 //
+//     https://github.com/leependu/washington-lulc-ml-landsat/tree/main/02_groundTruth/p43_r27                    //
 //                                                                                                                //
-//// Did my links expire?                                                                                         //
-//// Find my scripts for yourself! --> https://code.earthengine.google.com/?accept_repo=users/leependu/geog415    //
-//// users/leependu/geog415/u2/groundTruth/r43_p27/*                                                              //
+//// Add this repository to your own Code Editor:                                                                 //
+//// https://code.earthengine.google.com/?accept_repo=users/leependu/washington-lulc-ml-landsat                   //
 //                                                                                                                //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
