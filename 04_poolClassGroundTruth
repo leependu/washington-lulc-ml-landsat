@@ -16,28 +16,31 @@
 // Classmates' asset paths are withheld for privacy; each collection is named by WRS-2 path/row/year.                   //
 // The merged, cleaned result of this script is loaded from my own export below (see EXPORT & FINAL PRINT).             //
 var fc_u2_groundTruth_p43_r27_2024 = ee.FeatureCollection("users/leependu/geog415/u2/agg_u2_featColl")                  //
-var fc_u2_groundTruth_p48_r26_2019 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p46_r27_2022 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p48_r26_2015 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p45_r27_2017 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p44_r26_2014 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p43_r27_2017 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p46_r26_2023 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p47_r27_2016 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p44_r28_2022 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p47_r26_2020 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p45_r26_2018 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p45_r28_2023 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p43_r28_2020 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p47_r27_2022 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p46_r28_2015 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p45_r27_2021 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p46_r27_2017 = ee.FeatureCollection("<withheld: classmate asset>")                                //
-var fc_u2_groundTruth_p46_r27_2018 = ee.FeatureCollection("<withheld: classmate asset>")                                //
+// var fc_u2_groundTruth_p48_r26_2019 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p46_r27_2022 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p48_r26_2015 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p45_r27_2017 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p44_r26_2014 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p43_r27_2017 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p46_r26_2023 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p47_r27_2016 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p44_r28_2022 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p47_r26_2020 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p45_r26_2018 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p45_r28_2023 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p43_r28_2020 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p47_r27_2022 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p46_r28_2015 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p45_r27_2021 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p46_r27_2017 = ee.FeatureCollection("<withheld: classmate asset>")                             //
+// var fc_u2_groundTruth_p46_r27_2018 = ee.FeatureCollection("<withheld: classmate asset>")                             //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
+// Pooling steps below need the withheld classmate assets, so they are commented out to keep this
+// script runnable. Their results load from my exports in EXPORT & FINAL PRINT.
+/*
 //////////////////////////////////
 ////  SUMMARIZE FC BY NAME    ////
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -348,6 +351,7 @@ print('Row count of dataset w/ sampled pixel values: ',apesSampled.size(),"(shru
 print('Dataset w/ sampled pixel reflectance values (apesSampled): ',apesSampled.limit(10));               //
                                                                                                           //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+*/
 
 
 
