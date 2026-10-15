@@ -1,0 +1,64 @@
+/////////////////////////////////////////////////////////////////////////////////
+//                                                                             //
+//  `07_lulcMap`                                                               //
+//  Land Cover Map: Random Forest Classification, 2022                         //
+//  Aaron Goodman (& Claude Opus 5.5)                                          //
+//  2026-10-14                                                                 //
+//                                                                             //
+/////////////////////////////////////////////////////////////////////////////////
+
+// Classified Images
+//// Exported once from `06_randomForest` (see its export block), so this script
+//// loads the results instead of retraining the model.
+//// Summer (June-August) median composites, Landsat 8 + 9, WRS-2 path 46 row 27.
+var classified2022 = ee.Image('users/leependu/geog415/u4/agg_geog415_classified_p46_r27_2022')
+var classified2017 = ee.Image('users/leependu/geog415/u4/agg_geog415_classified_p46_r27_2017')
+
+// Classes and Palette
+//// Class 6 ('Unknown') was never assigned, so it has no legend entry.
+//// Colors follow the NLCD legend where a class has a close NLCD match.
+var classes = [
+  {value: 1, name: 'Urban',       color: 'eb0000'},
+  {value: 2, name: 'Agriculture', color: 'ab6c28'},
+  {value: 3, name: 'Rangeland',   color: 'dfdfc2'},
+  {value: 4, name: 'Forest',      color: '1c5f2c'},
+  {value: 5, name: 'Water',       color: '476ba1'},
+  {value: 7, name: 'Barren',      color: 'b3ac9f'}
+]
+var classVis = {
+  min: 1,
+  max: 7,
+  palette: ['eb0000', 'ab6c28', 'dfdfc2', '1c5f2c', '476ba1', '000000', 'b3ac9f']
+}
+
+// Map
+Map.setOptions('HYBRID')
+Map.setCenter(-121.75, 47.5, 9)
+Map.addLayer(classified2017, classVis, 'Land Cover 2017', false)
+Map.addLayer(classified2022, classVis, 'Land Cover 2022')
+
+// Legend
+var legend = ui.Panel({style: {position: 'bottom-left', padding: '8px 12px'}})
+legend.add(ui.Label('Land Cover, 2022', {fontWeight: 'bold', fontSize: '14px', margin: '0 0 6px 0'}))
+classes.forEach(function(c) {
+  var swatch = ui.Label('', {backgroundColor: '#' + c.color, padding: '8px', margin: '0 6px 4px 0'})
+  var label = ui.Label(c.name, {margin: '0 0 4px 0'})
+  legend.add(ui.Panel([swatch, label], ui.Panel.Layout.Flow('horizontal')))
+})
+legend.add(ui.Label('Random forest, Landsat 8/9, path 46 row 27', {fontSize: '11px', color: 'grey', margin: '4px 0 0 0'}))
+Map.add(legend)
+
+// Thumbnail for the aggis.org map gallery
+//// 1000 x 1000 PNG, Seattle through the Cascade foothills.
+//// In Web Mercator at this latitude, 1.5 degrees of longitude by 1.0 of latitude is close to square.
+var thumbRegion = ee.Geometry.Rectangle([-122.5, 47.0, -121.0, 48.0])
+var thumbParams = {
+  region: thumbRegion,
+  dimensions: '1000x1000',
+  crs: 'EPSG:3857',
+  format: 'png'
+}
+var thumbImage = classified2022.visualize(classVis)
+print('Gallery thumbnail (2022):')
+print(ui.Thumbnail({image: thumbImage, params: thumbParams}))
+print('Full-size PNG, open and save:', thumbImage.getThumbURL(thumbParams))
