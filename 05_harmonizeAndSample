@@ -153,7 +153,7 @@ var extr = function(feature) {                                                  
   // Remove the 'image' property and add 'image_id'                                                       //
   props = props.remove(['image']).set('image_id', imgId);                                                 //
   // Set the properties on the new feature                                                                //
-  newFeature = newFeature.setMulti(props);                                                                //
+  newFeature = newFeature.set(props);                                                                     //
   // Process the image                                                                                    //
   var imgSr = dnToSr(clrMsk(img).select(bands));                                                          //
   // Sample the image                                                                                     //

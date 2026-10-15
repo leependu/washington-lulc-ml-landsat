@@ -175,7 +175,7 @@ var extrScale = function(feature, scale) {                                      
   var newFeature = ee.Feature(feature.geometry());                                                        //
   var props = feature.toDictionary();                                                                     //
   props = props.remove(['image']).set('image_id', imgId);                                                 //
-  newFeature = newFeature.setMulti(props);                                                                //
+  newFeature = newFeature.set(props);                                                                     //
   var imgSr = dnToSr(clrMsk(img).select(bands));                                                          //
   return imgSr.sampleRegions({                                                                            //
     collection: ee.FeatureCollection([newFeature]),                                                       //
