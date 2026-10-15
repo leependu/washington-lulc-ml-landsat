@@ -1,6 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////////
 //                                                                             //
-//  `agg_geog415_u4_harmonization`                                             //
+//  `05_harmonizeAndSample`                                                    //
+//  Originally `u4/agg_geog415_u4_harmonization` (private class repo)          //
 //  Geog 415 Unit 4 Harmonization                                              //  
 //  Aaron Goodman                                                              //
 //  2025-05-25                                                                 //
