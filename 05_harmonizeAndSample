@@ -75,7 +75,7 @@ var processLs8 = function(feature) {                                            
   var filteredImages = ls8Sr                                                                              //
     .filter(ee.Filter.eq('WRS_PATH', path))                                                               //
     .filter(ee.Filter.eq('WRS_ROW', row));                                                                //
-  // Find closest image by date within 30 days                                                            //
+  // Take the earliest image within 15 days either side of the point's date (30-day window)               //
   var closestImage = filteredImages                                                                       //
     .filterDate(date.advance(-15, 'day'), date.advance(15, 'day'))                                        //
     .sort('system:time_start', true)                                                                      //
@@ -92,7 +92,7 @@ var processLs9 = function(feature) {                                            
   var filteredImages = ls9Sr                                                                              //
     .filter(ee.Filter.eq('WRS_PATH', path))                                                               //
     .filter(ee.Filter.eq('WRS_ROW', row));                                                                //
-  // Find closest image by date within 30 days                                                            //
+  // Take the earliest image within 15 days either side of the point's date (30-day window)               //
   var closestImage = filteredImages                                                                       //
     .filterDate(date.advance(-15, 'day'), date.advance(15, 'day'))                                        //
     .sort('system:time_start', true)                                                                      //
