@@ -2,7 +2,41 @@
 
 Sharing scripts created in UCLA MAGIST's GEOG 415: Geospatial Data Science Futures. Collaborative final project: ML LULC classification for Eastern Washington with my classmates.
 
-Setting up GitHub mirror: 
+Random forest land cover classification of Washington State from Landsat 8 and 9 surface reflectance, trained on ground truth points pooled from the whole class, in Google Earth Engine (Spring 2025, Dr. Bo Zhou).
+
+Each student digitized seasonal ground truth for one Landsat WRS-2 path/row and year. I digitized 600 points for path 43, row 27 (Spokane and the Palouse, 2024), then pooled 17 of the class's collections into one training set covering 13 WRS-2 footprints (paths 43–48, rows 26–28) and the years 2014–2024. The model classifies six land cover classes: urban, agriculture, rangeland, forest, water, and barren.
+
+## Scripts
+
+Run in order; each script's header names the original class script it came from.
+
+| Script | What it does |
+| --- | --- |
+| [`01_sceneSelection`](./01_sceneSelection) | Filters Landsat 8 and 9 Collection 2 Level 2 by path/row and season to find cloud-free 2024 scenes |
+| [`02_groundTruth/p43_r27/`](./02_groundTruth/p43_r27) | Thirteen digitization scripts, one per scene: hand-placed points for six classes, about 150 per season (600 total) |
+| [`03_mergeGroundTruth`](./03_mergeGroundTruth) | Merges the 13 scene collections into one exported FeatureCollection |
+| [`04_poolClassGroundTruth`](./04_poolClassGroundTruth) | Pools the class's collections: converts polygon sets to centroids, repairs property names and types, drops two collections missing date and path/row, screens coordinate errors, joins each point to its source scene, masks clouds, and samples reflectance |
+| [`05_harmonizeAndSample`](./05_harmonizeAndSample) | Coerces the pooled schema to consistent types and re-samples six bands at 30 m |
+| [`06_randomForest`](./06_randomForest) | Adds Tasseled Cap components, tests 30–150 m sampling scales, tunes the random forest, assesses accuracy, and classifies 2017 and 2022 summer composites for change detection |
+| [`07_lulcMap`](./07_lulcMap) | Map of the 2022 classification with a legend, plus the gallery thumbnail |
+| [`tools`](./tools) | Shared functions used by `05` and `06`: scene join, QA_PIXEL cloud mask, reflectance scaling, sampling |
+
+## Results
+
+- **Scale sensitivity.** 30 m sampling with Tasseled Cap components scored best (0.709, vs 0.687 for the six reflectance bands alone); accuracy fell steadily at coarser scales.
+- **Tuning.** Earth Engine memory limits ruled out a grid search, so hyperparameters were tuned one at a time: 130 trees, 3 variables per split, minimum leaf population 1, bag fraction 0.5.
+- **Accuracy.** About 68–70% overall on a random 80/20 train/test split (kappa about 0.62–0.63). The committed `06_randomForest` reports 68.3%. The exact figure depends on which points land in the test set, and Earth Engine reshuffles that split whenever upstream code changes; earlier versions of the same model scored 70.2% and 69.1% (details in the script's comments). Forest and water classify well (producer's accuracy about 0.88 and 0.92); rangeland is the weakest class (about 0.40), confused mostly with agriculture and barren.
+- **Change detection.** Classified 2017 and 2022 summer median composites for path 46, row 27 (Seattle to the Cascades) and built a transition matrix. `06` maps stable pixels in grey and changed pixels in the color of their 2022 class.
+
+## Notes
+
+- Classmates' ground truth asset paths are withheld in `04`, and the steps that need them are commented out. The pooled and sampled results load from my own public exports, so every script runs as-is.
+- The ground truth file and variable names say `r43_p27`, but they mean path 43, row 27 (the labels are swapped).
+- To open the scripts in the Code Editor: https://code.earthengine.google.com/?accept_repo=users/leependu/washington-lulc-ml-landsat
+
+This README was drafted by Claude Opus 5.5. [`tools`](./tools) and [`07_lulcMap`](./07_lulcMap) were written with Claude Opus 5.5, which also helped clean up the original class scripts in October 2026.
+
+Setting up GitHub mirror:
 
 ```
 git clone https://earthengine.googlesource.com/users/leependu/washington-lulc-ml-landsat
