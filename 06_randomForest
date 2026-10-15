@@ -871,6 +871,26 @@ print('Composite 2022 bands:', composite2022.bandNames());                      
 var classified2017 = composite2017.select(finalProperties).classify(finalRF);                             //
 var classified2022 = composite2022.select(finalProperties).classify(finalRF);                             //
                                                                                                           //
+// Export both classifications for `07_lulcMap`, which loads them instead of retraining.                  //
+// Run once: uncomment, run, then start both tasks in the Tasks tab. Mode pyramiding keeps class codes.   //
+// var p46r27Footprint = ls8Sr.merge(ls9Sr)                                                               //
+//   .filter(ee.Filter.eq('WRS_PATH', 46))                                                                //
+//   .filter(ee.Filter.eq('WRS_ROW', 27))                                                                 //
+//   .filterDate('2017-06-01', '2022-09-01')                                                              //
+//   .geometry().dissolve();                                                                              //
+// [[classified2017, 2017], [classified2022, 2022]].forEach(function(pair) {                              //
+//   Export.image.toAsset({                                                                               //
+//     image: pair[0].toByte(),                                                                           //
+//     description: 'agg_geog415_classified_p46_r27_' + pair[1],                                          //
+//     assetId: 'users/leependu/geog415/u4/agg_geog415_classified_p46_r27_' + pair[1],                    //
+//     region: p46r27Footprint,                                                                           //
+//     crs: 'EPSG:32610',                                                                                 //
+//     scale: 30,                                                                                         //
+//     pyramidingPolicy: {'.default': 'mode'},                                                            //
+//     maxPixels: 1e10                                                                                    //
+//   });                                                                                                  //
+// });                                                                                                    //
+                                                                                                          //
 // Change detection matrix                                                                                //
 // Multiply first period by 10, add second period                                                         //
 // Creates unique codes: 11=Urban→Urban, 14=Urban→Forest, 41=Forest→Urban, etc.                           //
