@@ -1,0 +1,97 @@
+/////////////////////////////////////////////////////////////////////////////////
+//                                                                             //
+//  `tools`                                                                    //
+//  Shared functions: scene join, cloud mask, reflectance scaling, sampling    //
+//  Aaron Goodman (& Claude Opus 5.5)                                          //
+//  2026-10-14                                                                 //
+//                                                                             //
+/////////////////////////////////////////////////////////////////////////////////
+
+// Usage
+//// var tools = require('users/leependu/washington-lulc-ml-landsat:tools')
+//// Collected from `04_poolClassGroundTruth`, `05_harmonizeAndSample`, and
+//// `06_randomForest`, where these functions were pasted in full.
+
+// Landsat 8 and 9 Collection 2 Level 2 (surface reflectance)
+var ls8Sr = ee.ImageCollection('LANDSAT/LC08/C02/T1_L2')
+var ls9Sr = ee.ImageCollection('LANDSAT/LC09/C02/T1_L2')
+exports.ls8Sr = ls8Sr
+exports.ls9Sr = ls9Sr
+
+// Bands involved
+var bands = ['SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B6', 'SR_B7']
+exports.bands = bands
+
+// Join Image
+//// Attach each ground truth point's source scene as an `image` property.
+//// Points carry `id` (LANDSAT_8 or LANDSAT_9), `path`, `row`, and `date`.
+//// Takes the earliest scene at that path/row within 15 days either side of
+//// the point's date (a 30-day window).
+var addMillis = function(feature) {
+  var dtMillis = ee.Date(feature.get('date')).millis()
+  return feature.set('dateMillis', dtMillis)
+}
+var joinSensor = function(fc, sensorId, collection) {
+  return fc
+    .filter(ee.Filter.equals('id', sensorId))
+    .map(addMillis)
+    .map(function(feature) {
+      var date = ee.Date(feature.get('date'))
+      var earliestImage = collection
+        .filter(ee.Filter.eq('WRS_PATH', ee.Number(feature.get('path'))))
+        .filter(ee.Filter.eq('WRS_ROW', ee.Number(feature.get('row'))))
+        .filterDate(date.advance(-15, 'day'), date.advance(15, 'day'))
+        .sort('system:time_start', true)
+        .first()
+      return feature.set('image', earliestImage)
+    })
+}
+exports.joinImage = function(fc) {
+  return joinSensor(fc, 'LANDSAT_8', ls8Sr)
+    .merge(joinSensor(fc, 'LANDSAT_9', ls9Sr))
+}
+
+// Clear pixel mask
+//// QA_PIXEL bit 6 is set for clear (cloud- and shadow-free) pixels.
+var clrMsk = function(image) {
+  var QABits = 6
+  var clear = image.select('QA_PIXEL')
+    // To retrieve all possible values
+    .bitwiseAnd(Math.pow(2, QABits))
+    // Shift to the first position to retrieve the value
+    .rightShift(QABits)
+    // Use only pixels that are clear
+    .eq(1)
+  return image
+    .select(bands)
+    .updateMask(clear)
+}
+exports.clrMsk = clrMsk
+
+// Convert DN to surface reflectance (Collection 2 scale and offset)
+var dnToSr = function(image) {
+  return image
+    .select(bands)
+    .multiply(0.0000275)
+    .add(-0.2)
+}
+exports.dnToSr = dnToSr
+
+// Extract pixel values at a given scale and attach them to the feature
+//// Replaces the `image` property with `image_id`, then samples the masked,
+//// scaled scene. Returns a FeatureCollection (empty if the pixel is masked),
+//// so map over a collection with this and then .flatten().
+exports.extrScale = function(feature, scale) {
+  var img = ee.Image(feature.get('image'))
+  var props = feature.toDictionary()
+    .remove(['image'])
+    .set('image_id', img.id())
+  var newFeature = ee.Feature(feature.geometry()).set(props)
+  var imgSr = dnToSr(clrMsk(img))
+  return imgSr.sampleRegions({
+    collection: ee.FeatureCollection([newFeature]),
+    properties: newFeature.propertyNames(),
+    scale: scale,
+    geometries: true
+  })
+}

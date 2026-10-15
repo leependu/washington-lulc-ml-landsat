@@ -8,6 +8,8 @@
 //                                                                             //
 /////////////////////////////////////////////////////////////////////////////////
 
+var tools = require('users/leependu/washington-lulc-ml-landsat:tools')
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                                                                                                                         //
 var agg_geog415_groundTruth_master = ee.FeatureCollection("users/leependu/geog415/u3/agg_geog415_groundTruth_master")                   //
@@ -51,60 +53,9 @@ print('Size of harmonized GT data:',agg_geog415_groundTruth_hrmnzd.size())      
 //          //                                                                                            //
 //////////////                                                                                            //
                                                                                                           //
-var ls8Sr = ee.ImageCollection('LANDSAT/LC08/C02/T1_L2');                                                 //
-var ls9Sr = ee.ImageCollection('LANDSAT/LC09/C02/T1_L2');                                                 //
-                                                                                                          //
-// Function to add time in millisecond since epoch                                                        //
-var addMillis = function(feature) {                                                                       //
-  var dtMillis = ee.Date(feature.get('date')).millis();                                                   //
-  return feature.set('dateMillis', dtMillis);                                                             //
-};                                                                                                        //
-// Split FC by sensor type                                                                                //
-var lsFilters = {                                                                                         //
-  'LANDSAT_8': ee.Filter.equals('id', 'LANDSAT_8'),                                                       //
-  'LANDSAT_9': ee.Filter.equals('id', 'LANDSAT_9')                                                        //
-};                                                                                                        //
-var ls8Features = agg_geog415_groundTruth_hrmnzd.filter(lsFilters['LANDSAT_8']).map(addMillis);           //
-var ls9Features = agg_geog415_groundTruth_hrmnzd.filter(lsFilters['LANDSAT_9']).map(addMillis);           //
-// Process Landsat 8 features by path/row                                                                 //
-var processLs8 = function(feature) {                                                                      //
-  var path = ee.Number(feature.get('path'));                                                              //
-  var row = ee.Number(feature.get('row'));                                                                //
-  var date = ee.Date(feature.get('date'));                                                                //
-  // Filter to exact path/row                                                                             //
-  var filteredImages = ls8Sr                                                                              //
-    .filter(ee.Filter.eq('WRS_PATH', path))                                                               //
-    .filter(ee.Filter.eq('WRS_ROW', row));                                                                //
-  // Take the earliest image within 15 days either side of the point's date (30-day window)               //
-  var closestImage = filteredImages                                                                       //
-    .filterDate(date.advance(-15, 'day'), date.advance(15, 'day'))                                        //
-    .sort('system:time_start', true)                                                                      //
-    .first();                                                                                             //
-  // Set the image as a property                                                                          //
-  return feature.set('image', closestImage);                                                              //
-};                                                                                                        //
-// Process Landsat 9 features by path/row                                                                 //
-var processLs9 = function(feature) {                                                                      //
-  var path = ee.Number(feature.get('path'));                                                              //
-  var row = ee.Number(feature.get('row'));                                                                //
-  var date = ee.Date(feature.get('date'));                                                                //
-  // Filter to exact path/row                                                                             //
-  var filteredImages = ls9Sr                                                                              //
-    .filter(ee.Filter.eq('WRS_PATH', path))                                                               //
-    .filter(ee.Filter.eq('WRS_ROW', row));                                                                //
-  // Take the earliest image within 15 days either side of the point's date (30-day window)               //
-  var closestImage = filteredImages                                                                       //
-    .filterDate(date.advance(-15, 'day'), date.advance(15, 'day'))                                        //
-    .sort('system:time_start', true)                                                                      //
-    .first();                                                                                             //
-  // Set the image as a property                                                                          //
-  return feature.set('image', closestImage);                                                              //
-};                                                                                                        //
-// Apply the processing to each feature                                                                   //
-var joinLs8 = ls8Features.map(processLs8);                                                                //
-var joinLs9 = ls9Features.map(processLs9);                                                                //
-// Merge the results                                                                                      //
-var agg_geog415_fCiC = joinLs8.merge(joinLs9);                                                            //
+// Attach each point's source scene: the earliest image within 15 days either side of its date,           //
+// at its own path/row (see `tools`)                                                                      //
+var agg_geog415_fCiC = tools.joinImage(agg_geog415_groundTruth_hrmnzd);                                   //
                                                                                                           //
 print('Feature/Image Collection data:','(agg_geog415_fCiC)', agg_geog415_fCiC.first());                   //
 print('Size of F/IC data:',agg_geog415_fCiC.size())                                                       //
@@ -116,53 +67,9 @@ print('Size of F/IC data:',agg_geog415_fCiC.size())                             
 //          //                                                                                            //
 //////////////                                                                                            //
                                                                                                           //
-// Clear pixel mask                                                                                       //
-var clrMsk = function(image){                                                                             //
-  // Bitmask for clear pixels                                                                             //
-  var QABits = 6;                                                                                         //
-  // Select the pixel QA band (Different between collections)                                             //
-  var clear = image.select('QA_PIXEL')                                                                    //
-    // To retrieve all possible values                                                                    //
-    .bitwiseAnd(Math.pow(2, QABits))                                                                      //
-    // Shift to the first position to retrieve the value                                                  //
-    .rightShift(QABits)                                                                                   //
-    // Use only pixels that are clear                                                                     //
-    .eq(1);                                                                                               //
-  return image                                                                                            //
-    .select(bands)                                                                                        //
-    .updateMask(clear)                                                                                    //
-};                                                                                                        //
-// Function to convert DN to SR                                                                           //
-var dnToSr = function(image) {                                                                            //
-  return image                                                                                            //
-    .select(bands)                                                                                        //
-    .multiply(0.0000275)                                                                                  //
-    .add(-0.2)                                                                                            //
-}                                                                                                         //
-// Bands involved                                                                                         //
-var bands = ['SR_B2','SR_B3','SR_B4','SR_B5','SR_B6','SR_B7']                                             //
-// Function to extract pixel values and attach to each feature                                            //
+// Mask clouds, scale to surface reflectance, and sample at 30 m (see `tools`)                            //
 var extr = function(feature) {                                                                            //
-  var img = ee.Image(feature.get('image'));                                                               //
-  // Convert the 'image' property to an image ID string                                                   //
-  var imgId = img.id();                                                                                   //
-  // Create a new feature with all original properties except 'image' and add 'image_id' instead          //
-  var newFeature = ee.Feature(feature.geometry());                                                        //
-  // Copy all properties from the original feature                                                        //
-  var props = feature.toDictionary();                                                                     //
-  // Remove the 'image' property and add 'image_id'                                                       //
-  props = props.remove(['image']).set('image_id', imgId);                                                 //
-  // Set the properties on the new feature                                                                //
-  newFeature = newFeature.set(props);                                                                     //
-  // Process the image                                                                                    //
-  var imgSr = dnToSr(clrMsk(img).select(bands));                                                          //
-  // Sample the image                                                                                     //
-  return imgSr.sampleRegions({                                                                            //
-    collection: ee.FeatureCollection([newFeature]),                                                       //
-    properties: newFeature.propertyNames(),                                                               //
-    scale: 30,                                                                                            //
-    geometries: true                                                                                      //
-  });                                                                                                     //
+  return tools.extrScale(feature, 30);                                                                    //
 };                                                                                                        //
 // Join reflectance                                                                                       //
 var agg_geog415_training = agg_geog415_fCiC.map(extr).flatten();                                          //
