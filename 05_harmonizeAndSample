@@ -178,9 +178,11 @@ print('Size of training data:',agg_geog415_training.size(),"(shrunk by clear mas
                                           //  & FINAL PRINT   //
 ////////////////////////////////////////////                  //////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                                                //
-Export.table.toAsset(agg_geog415_groundTruth_hrmnzd,"agg_geog415_groundTruth_hrmnzd")                                                             //
-Export.table.toAsset(agg_geog415_fCiC,"agg_geog415_fCiC")                                                                                         //
-Export.table.toAsset(agg_geog415_training,"agg_geog415_training")                                                                                 //
+// Exports already run; uncomment to re-export. `06_randomForest` loads the harmonized result from its asset:                                     //
+//     users/leependu/geog415/u4/agg_geog415_groundTruth_hrmnzd                                                                                   //
+// Export.table.toAsset(agg_geog415_groundTruth_hrmnzd,"agg_geog415_groundTruth_hrmnzd")                                                          //
+// Export.table.toAsset(agg_geog415_fCiC,"agg_geog415_fCiC")                                                                                      //
+// Export.table.toAsset(agg_geog415_training,"agg_geog415_training")                                                                              //
 //                                                                                                                                                //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
