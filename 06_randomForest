@@ -810,7 +810,9 @@ var finalConfusionMatrix = finalTest.classify(finalRF)                          
                                                                                                           //
 print('=== FINAL MODEL ACCURACY ASSESSMENT ===');                                                         //
 print('Confusion Matrix:', finalConfusionMatrix);                                                         //
-print('Overall Accuracy:', finalConfusionMatrix.accuracy(),'[70.212%]');                                  //
+// Overall accuracy was 0.7021 when tuned (May 2025) and 0.6910 on re-run (Oct 2026) with the same code,  //
+// seed, and 1796-point test set; GEE does not guarantee identical results across runs and versions       //
+print('Overall Accuracy:', finalConfusionMatrix.accuracy());                                              //
 print('Producers Accuracy:', finalConfusionMatrix.producersAccuracy());                                   //
 print('Consumers Accuracy:', finalConfusionMatrix.consumersAccuracy());                                   //
 print('Kappa:', finalConfusionMatrix.kappa());                                                            //
